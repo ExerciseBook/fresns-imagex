@@ -16,7 +16,7 @@ class PluginConfig extends BasePluginConfig
     public $currVersionInt = 1;
 
     // 插件默认命令字, 任何插件必须要要有
-    public const CMD_DEFAULT = 'ericlian_imagex_default';
+    public const CMD_DEFAULT = 'imagex_default';
 
     // 插件命令字回调映射
     CONST FRESNS_CMD_HANDLE_MAP = [
