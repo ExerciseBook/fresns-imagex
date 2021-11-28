@@ -14,6 +14,9 @@ class PluginConfig extends BasePluginConfig
     public $authorLink = "https://github.com/ExerciseBook";
     public $currVersion = '1.0';
     public $currVersionInt = 1;
+    public $sceneArr = [
+        'storage', // 存储服务商
+    ];
 
     // 插件默认命令字, 任何插件必须要要有
     public const CMD_DEFAULT = 'imagex_default';
