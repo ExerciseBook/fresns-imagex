@@ -1,0 +1,14 @@
+{
+    "unikey": "ImageX",
+    "type": 1,
+    "name": "ImageX Integration",
+    "description": "ImageX integration for fresns",
+    "author": "Eric_Lian",
+    "authorLink": "https://superexercisebook.com/",
+    "version": "1.0.0",
+    "scene": [
+        "storage"
+    ],
+    "accessPath": "",
+    "settingPath": null
+}

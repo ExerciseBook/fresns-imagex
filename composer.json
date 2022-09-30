@@ -1,0 +1,29 @@
+{
+    "name": "exercisebook/fresns-imagex",
+    "description": "ImageX integration for Fresns",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eric_Lian",
+            "email": "public@superexercisebook.com",
+            "homepage": "https://superexercisebook.com/"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Plugins\\ImageX\\": "app"
+        }
+    },
+    "require": {
+        "exercisebook/flysystem-imagex": ">=2.0",
+        "symfony/polyfill-php80": "^1.23"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Plugins\\ImageX\\Providers\\ImageXServiceProvider"
+            ],
+            "aliases": []
+        }
+    }
+}
