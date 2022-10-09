@@ -8,48 +8,71 @@ class CmdWordService
 {
     use CmdWordResponseTrait;
 
+    private FresnsImageXService $imagexService;
+
+    public function __construct(FresnsImageXService $imagexService)
+    {
+        $this->imagexService = $imagexService;
+    }
+
     public function getUploadToken(array $wordBody)
     {
-        return [];
+        $uploadToken = new UploadToken($wordBody);
+        $ret = $this->imagexService->getUploadToken($uploadToken);
+        return $this->success($ret);
     }
 
     public function uploadFile(array $wordBody)
     {
-        return [];
+        $uploadFile = new UploadFile($wordBody);
+        $ret = $this->imagexService->uploadFile($uploadFile);
+        return $this->success($ret);
     }
 
     public function uploadFileInfo(array $wordBody)
     {
-        return [];
+        $uploadFileInfo = new UploadFileInfo($wordBody);
+        $ret = $this->imagexService->uploadFileInfo($uploadFileInfo);
+        return $this->success($ret);
     }
 
     public function getAntiLinkFileInfo(array $wordBody)
     {
-        return [];
+        $antiLinkFileInfo = new AntiLinkFileInfo($wordBody);
+        $ret = $this->imagexService->getAntiLinkFileInfo($antiLinkFileInfo);
+        return $this->success($ret);
     }
 
     public function getAntiLinkFileInfoList(array $wordBody)
     {
-        return [];
+        $antiLinkFileInfoList = new AntiLinkFileInfoList($wordBody);
+        $ret = $this->imagexService->getAntiLinkFileInfoList($antiLinkFileInfoList);
+        return $this->success($ret);
     }
 
     public function getAntiLinkFileOriginalUrl(array $wordBody)
     {
-        return [];
+        $antiLinkFileInfoList = new AntiLinkFileOriginalUrl($wordBody);
+        $ret = $this->imagexService->getAntiLinkFileOriginalUrl($antiLinkFileInfoList);
+        return $this->success($ret);
     }
 
     public function logicalDeletionFiles(array $wordBody)
     {
-        return [];
+        $logicalDeletionFiles = new LogicalDeletionFiles($wordBody);
+        $this->imagexService->logicalDeletionFiles($logicalDeletionFiles);
+        return $this->success();
     }
 
     public function physicalDeletionFiles(array $wordBody)
     {
-        return [];
+        $physicalDeletionFiles = new PhysicalDeletionFiles($wordBody);
+        $this->imagexService->physicalDeletionFiles($physicalDeletionFiles);
+        return $this->success();
     }
 
     public function audioVideoTranscoding(array $wordBody)
     {
-        return [];
+        return $this->success();
     }
 }

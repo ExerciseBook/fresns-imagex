@@ -3,9 +3,7 @@
 namespace Plugins\ImageX\Providers;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use ExerciseBook\Flysystem\ImageX\ImageXAdapter;
-use Illuminate\Support\Facades\Storage;
-use League\Flysystem\Filesystem;
+use Plugins\ImageX\Services\FresnsImageXService;
 
 class ImageXServiceProvider extends BaseServiceProvider
 {
@@ -33,6 +31,7 @@ class ImageXServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->app->register(RouteServiceProvider::class);
+        $this->app->singleton('FresnsImageXService', FresnsImageXService::class);
 
         if ($this->app->runningInConsole()) {
             $this->app->register(CommandServiceProvider::class);

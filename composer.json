@@ -15,13 +15,14 @@
         }
     },
     "require": {
-        "exercisebook/flysystem-imagex": ">=2.0",
+        "exercisebook/flysystem-imagex": ">=1.0.5",
         "symfony/polyfill-php80": "^1.23"
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Plugins\\ImageX\\Providers\\ImageXServiceProvider"
+                "Plugins\\ImageX\\Providers\\ImageXServiceProvider",
+                "Plugins\\ImageX\\Providers\\CommandServiceProvider"
             ],
             "aliases": []
         }
