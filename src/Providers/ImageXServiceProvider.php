@@ -31,7 +31,6 @@ class ImageXServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->app->register(RouteServiceProvider::class);
-        $this->app->singleton('FresnsImageXService', FresnsImageXService::class);
 
         if ($this->app->runningInConsole()) {
             $this->app->register(CommandServiceProvider::class);

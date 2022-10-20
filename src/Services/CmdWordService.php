@@ -3,71 +3,79 @@
 namespace Plugins\ImageX\Services;
 
 use Fresns\CmdWordManager\Traits\CmdWordResponseTrait;
+use Illuminate\Support\Facades\Log;
 
 class CmdWordService
 {
     use CmdWordResponseTrait;
 
-    private FresnsImageXService $imagexService;
-
-    public function __construct(FresnsImageXService $imagexService)
+    public function __construct()
     {
-        $this->imagexService = $imagexService;
     }
 
     public function getUploadToken(array $wordBody)
     {
         $uploadToken = new UploadToken($wordBody);
-        $ret = $this->imagexService->getUploadToken($uploadToken);
+        $imagexService = new FresnsImageXService($uploadToken->type);
+        $ret = $imagexService->getUploadToken($uploadToken);
         return $this->success($ret);
     }
 
     public function uploadFile(array $wordBody)
     {
         $uploadFile = new UploadFile($wordBody);
-        $ret = $this->imagexService->uploadFile($uploadFile);
+        $imagexService = new FresnsImageXService($uploadFile->type);
+        $ret = $imagexService->uploadFile($uploadFile);
         return $this->success($ret);
     }
 
     public function uploadFileInfo(array $wordBody)
     {
         $uploadFileInfo = new UploadFileInfo($wordBody);
-        $ret = $this->imagexService->uploadFileInfo($uploadFileInfo);
+        $imagexService = new FresnsImageXService($uploadFileInfo->type);
+        $ret = $imagexService->uploadFileInfo($uploadFileInfo);
         return $this->success($ret);
     }
 
     public function getAntiLinkFileInfo(array $wordBody)
     {
+        Log::debug(json_encode($wordBody));
+
         $antiLinkFileInfo = new AntiLinkFileInfo($wordBody);
-        $ret = $this->imagexService->getAntiLinkFileInfo($antiLinkFileInfo);
+        $imagexService = new FresnsImageXService($antiLinkFileInfo->type);
+        $ret = $imagexService->getAntiLinkFileInfo($antiLinkFileInfo);
         return $this->success($ret);
     }
 
     public function getAntiLinkFileInfoList(array $wordBody)
     {
         $antiLinkFileInfoList = new AntiLinkFileInfoList($wordBody);
-        $ret = $this->imagexService->getAntiLinkFileInfoList($antiLinkFileInfoList);
+        $imagexService = new FresnsImageXService($antiLinkFileInfoList->type);
+        $ret = $imagexService->getAntiLinkFileInfoList($antiLinkFileInfoList);
         return $this->success($ret);
     }
 
     public function getAntiLinkFileOriginalUrl(array $wordBody)
     {
         $antiLinkFileInfoList = new AntiLinkFileOriginalUrl($wordBody);
-        $ret = $this->imagexService->getAntiLinkFileOriginalUrl($antiLinkFileInfoList);
+        $imagexService = new FresnsImageXService($antiLinkFileInfoList->type);
+        $ret = $imagexService->getAntiLinkFileOriginalUrl($antiLinkFileInfoList);
         return $this->success($ret);
     }
 
     public function logicalDeletionFiles(array $wordBody)
     {
         $logicalDeletionFiles = new LogicalDeletionFiles($wordBody);
-        $this->imagexService->logicalDeletionFiles($logicalDeletionFiles);
+        $imagexService = new FresnsImageXService($logicalDeletionFiles->type);
+        $imagexService->logicalDeletionFiles($logicalDeletionFiles);
         return $this->success();
     }
 
     public function physicalDeletionFiles(array $wordBody)
     {
         $physicalDeletionFiles = new PhysicalDeletionFiles($wordBody);
-        $this->imagexService->physicalDeletionFiles($physicalDeletionFiles);
+        $imagexService = new FresnsImageXService($physicalDeletionFiles->type);
+        $imagexService->physicalDeletionFiles($physicalDeletionFiles);
         return $this->success();
     }
 

@@ -10,5 +10,10 @@
         "storage"
     ],
     "accessPath": "",
-    "settingPath": null
+    "settingPath": null,
+    "providers": [
+        "Plugins\\ImageX\\Providers\\ImageXServiceProvider",
+        "Plugins\\ImageX\\Providers\\CmdWordServiceProvider"
+    ],
+    "aliases": []
 }

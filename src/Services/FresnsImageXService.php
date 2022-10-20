@@ -3,13 +3,13 @@
 
 namespace Plugins\ImageX\Services;
 
+use App\Helpers\ConfigHelper;
 use App\Helpers\FileHelper;
 use App\Models\File;
 use App\Utilities\FileUtility;
 use ExerciseBook\Flysystem\ImageX\ImageXAdapter;
 use ExerciseBook\Flysystem\ImageX\ImageXConfig;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use League\Flysystem\Config;
 use Symfony\Component\Uid\UuidV4;
 
@@ -17,15 +17,18 @@ class FresnsImageXService
 {
     protected int $storageId = 21;
 
-    protected string $defaultBucketName = "";
-
-    protected array $userConfig = [];
-
     private ImageXConfig $imagexConfig;
 
     private ImageXAdapter $adapter;
 
+
     private string $fileRetrievingSignatureToken;
+
+    private bool $antiLinkConfigEnabled;
+
+
+    private int $processingType;
+
 
     public function __construct(int $type)
     {
@@ -41,13 +44,33 @@ class FresnsImageXService
         $config->serviceId = Arr::get($settings, 'bucketName', '');
         $config->domain = Arr::get($settings, 'bucketDomain', '');
 
-//        $this->imagePreviewTemplate = $this->read_template($settings->get('exercisebook-fof-upload-imagex.imagexConfig.imagePreviewTemplate', ''));
-//        $this->imageFullscreenTemplate = $this->read_template($settings->get('exercisebook-fof-upload-imagex.imagexConfig.imageFullscreenTemplate', ''));
-
         $this->fileRetrievingSignatureToken = Arr::get($settings, 'antiLinkKey', '');
         $this->imagexConfig = $config;
 
         $this->adapter = new ImageXAdapter($this->imagexConfig);
+
+        $this->processingType = $type;
+        $this->antiLinkConfigEnabled = Arr::get($settings, 'antiLinkConfigStatus', 'false');
+    }
+
+    public function isImageProcessing()
+    {
+        return $this->processingType == 1;
+    }
+
+    public function isVideoProcessing()
+    {
+        return $this->processingType == 2;
+    }
+
+    public function isAudioProcessing()
+    {
+        return $this->processingType == 3;
+    }
+
+    public function isGeneralProcessing()
+    {
+        return $this->processingType == 1;
     }
 
     /**
@@ -63,7 +86,7 @@ class FresnsImageXService
      */
     public function needSignature()
     {
-        return $this->fileRetrievingSignatureToken != null && strlen($this->fileRetrievingSignatureToken) > 0;
+        return $this->antiLinkConfigEnabled && $this->fileRetrievingSignatureToken != null && strlen($this->fileRetrievingSignatureToken) > 0;
     }
 
     /**
@@ -88,27 +111,60 @@ class FresnsImageXService
     }
 
     /**
-     * @param $file File
+     * @param $filePath string
      * @param $template string
      * @return string
      */
-    public function generateUrl($file, $template)
+    public function generateUrl($filePath, $template)
     {
         if ($this->needSignature()) {
-            if (Str::startsWith($file->type, 'image/') && $this->isTemplate($template)) {
-                return "//" . $this->signPath('/' . $file->path . $template);
+            if (($this->isImageProcessing() || $this->isVideoProcessing()) && $this->isTemplate($template)) {
+                return $this->signPath('/' . $filePath . $template);
             } else {
-                return "//" . $this->signPath('/' . $file->path);
+                return $this->signPath('/' . $filePath);
             }
         } else {
-            if (Str::startsWith($file->type, 'image/') && $this->isTemplate($template)) {
-                return "//" . $this->imagexConfig->domain . '/' . $file->path . $template;
+            if (($this->isImageProcessing() || $this->isVideoProcessing()) && $this->isTemplate($template)) {
+                return $this->imagexConfig->domain . '/' . $filePath . $template;
             } else {
-                return "//" . $this->imagexConfig->domain . '/' . $file->path;
+                return $this->imagexConfig->domain . '/' . $filePath;
             }
         }
     }
 
+    /**
+     * @param $key
+     * @return string
+     */
+    private function getTemplateFromFresns($key)
+    {
+        return $this->readTemplate(ConfigHelper::fresnsConfigByItemKey($key) ?? "");
+    }
+
+    /**
+     * @param $ret
+     * @return string
+     */
+    private function readTemplate($ret)
+    {
+        if (!is_string($ret)) {
+            $ret = '';
+        }
+
+        if (strlen($ret) == 0) {
+            return '';
+        }
+
+        if (!str_starts_with($ret, '~')) {
+            $ret = '~' . $ret;
+        }
+
+        if (!str_contains($ret, '.')) {
+            $ret .= '.image';
+        }
+
+        return $ret;
+    }
 
     public function getUploadToken(UploadToken $uploadToken)
     {
@@ -150,7 +206,13 @@ class FresnsImageXService
     public function uploadFile(UploadFile $uploadFile)
     {
         $path = FileHelper::fresnsFileStoragePath($uploadFile->type, $uploadFile->usageType) . "/" . (new UuidV4())->toRfc4122();
-        $this->getAdapter()->writeStream($path, $uploadFile->file, new Config());
+
+        /**
+         * @type \Illuminate\Http\UploadedFile $file
+         */
+        $file = $uploadFile->file;
+        $resource = fopen($file->path(), "r");
+        $this->getAdapter()->writeStream($path, $resource, new Config());
 
         $bodyInfo = [
             'platformId' => $uploadFile->platformId,
@@ -163,12 +225,12 @@ class FresnsImageXService
             'uid' => $uploadFile->uid ?: null,
             'type' => $uploadFile->type,
             'moreJson' => $uploadFile->moreJson ?: null,
-            'md5' => $stat['md5'] ?? null,
+            'md5' => null,
         ];
 
-        $uploadFileInfo = FileUtility::saveFileInfoToDatabase($bodyInfo, $path, $this->file);
+        $uploadFileInfo = FileUtility::saveFileInfoToDatabase($bodyInfo, $path, $file);
 
-        @unlink($uploadFile->file->path());
+        @unlink($file->path());
         return $uploadFileInfo;
     }
 
@@ -187,7 +249,6 @@ class FresnsImageXService
             'fileInfo' => $uploadFileInfo->fileInfo,
         ];
 
-        // TODO 我到底得到了个啥？
         $uploadFileInfos = FileUtility::uploadFileInfo($bodyInfo);
 
         $data = [];
@@ -200,7 +261,7 @@ class FresnsImageXService
 
     public function getAntiLinkFileInfo(AntiLinkFileInfo $antiLinkFileInfo)
     {
-        if (! $this->needSignature()) {
+        if (!$this->needSignature()) {
             return null;
         }
 
@@ -216,15 +277,26 @@ class FresnsImageXService
 
             $fileInfo = $file->getFileInfo();
             $keys = [
-                'imageDefaultUrl', 'imageConfigUrl', 'imageAvatarUrl', 'imageRatioUrl', 'imageSquareUrl', 'imageBigUrl',
-                'videoCoverUrl', 'videoGifUrl', 'videoUrl',
-                'audioUrl',
-                'documentUrl', 'documentPreviewUrl',
+                'imageDefaultUrl' => "",
+                'imageConfigUrl' => $this->getTemplateFromFresns("image_thumb_config"),
+                'imageAvatarUrl' => $this->getTemplateFromFresns("image_thumb_avatar"),
+                'imageRatioUrl' => $this->getTemplateFromFresns("image_thumb_ratio"),
+                'imageSquareUrl' => $this->getTemplateFromFresns("image_thumb_square"),
+                'imageBigUrl' => $this->getTemplateFromFresns("image_thumb_big"),
+
+                'videoCoverUrl' => "",
+                'videoGifUrl' => "",
+                'videoUrl' => "",
+
+                'audioUrl' => "",
+
+                'documentUrl' => "",
+                'documentPreviewUrl' => "",
             ];
 
-            foreach ($keys as $key) {
-                if (!empty($fileInfo[$key])) {
-                    $fileInfo[$key] = $this->generateUrl($fileInfo[$key], "");
+            foreach ($keys as $k => $v) {
+                if (!empty($fileInfo[$k])) {
+                    $fileInfo[$k] = $this->generateUrl($file["path"], $v);
                 }
             }
 
@@ -259,7 +331,7 @@ class FresnsImageXService
 
     public function getAntiLinkFileOriginalUrl(AntiLinkFileOriginalUrl $antiLinkFileInfoList)
     {
-        if (! $this->needSignature()) {
+        if (!$this->needSignature()) {
             return null;
         }
 
@@ -267,7 +339,7 @@ class FresnsImageXService
         $file = $this->getFileByFileIdOrFid($antiLinkFileInfoList->fileIdOrFid);
 
         $originalPath = $file->original_path;
-        if (! $originalPath) {
+        if (!$originalPath) {
             $originalPath = $file->path;
         }
 
@@ -291,8 +363,8 @@ class FresnsImageXService
             $file->delete();
 
             // 删除 防盗链 缓存
-            cache()->forget('imagex_file_antilink_'.$file->id);
-            cache()->forget('imagex_file_antilink_'.$file->fid);
+            cache()->forget('imagex_file_antilink_' . $file->id);
+            cache()->forget('imagex_file_antilink_' . $file->fid);
         }
         return true;
     }
