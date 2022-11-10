@@ -15,7 +15,7 @@
         }
     },
     "require": {
-        "exercisebook/flysystem-imagex": ">=1.0.5",
+        "exercisebook/flysystem-imagex": ">=1.0.6",
         "symfony/polyfill-php80": "^1.23"
     }
 }
