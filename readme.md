@@ -1,4 +1,6 @@
-#  VolcEngine ImageX Integration for Fresns
+# VolcEngine ImageX Integration for Fresns
+
+[中文介绍](readme_zh.md)
 
 ## Feature
 
@@ -6,10 +8,17 @@
 2. [Powerful] Image processing. You can change your image processing to optimize the bandwidth.
 3. [Safe] Url signature. Guest can not get your file without a correct signature from your site.
 
+## Installation
+
+1. Install this plugin by typing plugin identity `ImageX` in your Control Panel.
+   Typing `php artisan market:require ImageX` in your shell works also.
+2. Enable this plugin.
+3. Switch to your fresns storage configuration.
+
 ## Configuration
 
 | Section           | Configuration                   | Meaning                                                                                                             |
-| ----------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+|-------------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------|
 | Server Config     | Service Provider                | Set to `ImageX Integration`                                                                                         |
 |                   | Secret ID                       | Your access key ID get from [VolcEngine IAM](https://console.volcengine.com/iam/keymanage/)                         |
 |                   | Secret Key                      | Your secret access key get from [VolcEngine IAM](https://console.volcengine.com/iam/keymanage/)                     |
@@ -25,7 +34,8 @@
 | Audio Function    | `-`                             | `Not supported`. ImageX does't provide any audio processing funcion. But you can storage your audio file in ImageX. |
 | Document Function | `-`                             | `Supported`. ImageX can storage any file you like.                                                                  |
 
-
 (1) The value is properly one of `cn-north-1`, `ap-singapore-1`, `us-east-1`
 
-(2) Configuration page `https://console.volcengine.com/imagex/service_manage/http_config/{SERVICE_ID}/{DOMAIN}`, e.g. `https://console.volcengine.com/imagex/service_manage/http_config/dQw4w9WgXcQ/example.com`. This plugin only supports method B.
+(2) Configuration page `https://console.volcengine.com/imagex/service_manage/http_config/{SERVICE_ID}/{DOMAIN}`,
+e.g. `https://console.volcengine.com/imagex/service_manage/http_config/dQw4w9WgXcQ/example.com`. This plugin only
+supports method B.
