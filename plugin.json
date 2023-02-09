@@ -5,12 +5,12 @@
     "description": "ImageX integration for fresns",
     "author": "Eric_Lian",
     "authorLink": "https://superexercisebook.com/",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "scene": [
         "storage"
     ],
-    "accessPath": "",
-    "settingPath": null,
+    "accessPath": "/imagex/upload?authorization={authorization}&config={uploadInfo}&postMessageKey={postMessageKey}",
+    "settingsPath": null,
     "providers": [
         "Plugins\\ImageX\\Providers\\ImageXServiceProvider",
         "Plugins\\ImageX\\Providers\\CmdWordServiceProvider"
