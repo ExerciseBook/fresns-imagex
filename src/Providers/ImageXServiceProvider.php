@@ -45,8 +45,16 @@ class ImageXServiceProvider extends BaseServiceProvider
     protected function registerConfig()
     {
         $this->mergeConfigFrom(
-            dirname(__DIR__, 2) . '/config/image-x.php', 'image-x'
+            dirname(__DIR__, 2) . '/config/imagex.php', 'imagex'
         );
+
+        $this->mergeConfigFrom(
+            dirname(__DIR__, 2).'/config/disks.php', 'fresns-imagex-filesystems'
+        );
+
+        $this->publishes([
+            __DIR__.'/../../config/imagex.php' => config_path('imagex.php'),
+        ], 'config');
     }
 
     /**
@@ -57,6 +65,11 @@ class ImageXServiceProvider extends BaseServiceProvider
     public function registerViews()
     {
         $this->loadViewsFrom(dirname(__DIR__, 2) . '/resources/views', 'ImageX');
+
+
+        $this->publishes([
+            __DIR__.'/../../resources/views' => resource_path('views/plugins/imagex'),
+        ], ['views', 'imagex-plugin-views']);
     }
 
     /**

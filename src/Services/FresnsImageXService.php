@@ -10,6 +10,8 @@ use App\Utilities\FileUtility;
 use ExerciseBook\Flysystem\ImageX\ImageXAdapter;
 use ExerciseBook\Flysystem\ImageX\ImageXConfig;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use League\Flysystem\Config;
 use Symfony\Component\Uid\UuidV4;
 
@@ -21,18 +23,25 @@ class FresnsImageXService
 
     private ImageXAdapter $adapter;
 
+    private int $clientAppId;
 
     private string $fileRetrievingSignatureToken;
 
     private bool $antiLinkConfigEnabled;
 
-
     private int $processingType;
-
 
     public function __construct(int $type)
     {
         $settings = FileHelper::fresnsFileStorageConfigByType($type);
+
+        $bucketName = explode(',', Arr::get($settings, 'bucketName', ''), 2);
+        $serviceId = $bucketName[0];
+        $clientAppId = 0;
+        if (count($bucketName) > 1) {
+            $clientAppId = intval($bucketName[1]);
+        }
+
 
         $config = new ImageXConfig();
         $config->region = Arr::get($settings, 'bucketArea', 'cn-north-1');
@@ -41,10 +50,11 @@ class FresnsImageXService
         }
         $config->accessKey = Arr::get($settings, 'secretId', '');
         $config->secretKey = Arr::get($settings, 'secretKey', '');
-        $config->serviceId = Arr::get($settings, 'bucketName', '');
+        $config->serviceId = $serviceId;
+        $this->clientAppId = $clientAppId;
         $config->domain = Arr::get($settings, 'bucketDomain', '');
 
-        $this->fileRetrievingSignatureToken = Arr::get($settings, 'antiLinkKey', '');
+        $this->fileRetrievingSignatureToken = Arr::get($settings, 'antiLinkKey', '') ?? '';
         $this->imagexConfig = $config;
 
         $this->adapter = new ImageXAdapter($this->imagexConfig);
@@ -166,40 +176,39 @@ class FresnsImageXService
         return $ret;
     }
 
+    /**
+     * @return int
+     */
+    public function getClientAppId()
+    {
+        return $this->clientAppId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getServiceId()
+    {
+        return $this->imagexConfig->serviceId;
+    }
+
     public function getUploadToken(UploadToken $uploadToken)
     {
-        $path = $uploadToken->name;
+        $uploadNum = $uploadToken->count ?? 1;
+        $expireTime = 3600;
 
-        // Sign
-        $applyParams = [];
-        $applyParams["Action"] = "ApplyImageUpload";
-        $applyParams["Version"] = "2018-08-01";
-        $applyParams["ServiceId"] = $this->imagexConfig->serviceId;
-        $applyParams["UploadNum"] = 1;
-        $applyParams["StoreKeys"] = [$path];
-        $queryStr = http_build_query($applyParams);
-
-        $response = $this->adapter->getClient()->applyUploadImage(['query' => $queryStr]);
-
-        $applyResponse = json_decode($response, true);
-        if (isset($applyResponse["ResponseMetadata"]["Error"])) {
-            throw new \LogicException(sprintf("uploadImages: request id %s error %s", $applyResponse["ResponseMetadata"]["RequestId"], $applyResponse["ResponseMetadata"]["Error"]["Message"]));
-        }
-
-        $uploadAddr = $applyResponse['Result']['UploadAddress'];
-        if (count($uploadAddr['UploadHosts']) == 0) {
-            throw new \LogicException("uploadImages: no upload host found");
-        }
-        $uploadHost = $uploadAddr['UploadHosts'][0];
-        if (count($uploadAddr['StoreInfos']) != 1) {
-            throw new \LogicException("uploadImages: store infos num != upload num");
+        $ret = [];
+        for ($i = 0; $i < $uploadNum; $i++) {
+            $storeKey = Str::uuid()->toString();
+            $sts = $this->adapter->getClient()->getUploadAuth([$this->getServiceId()], $expireTime, $storeKey);
+            $sts['storeKey'] = $storeKey;
+            Cache::set("imagex:sts:" . $sts['AccessKeyID'], $sts);
+            $ret[] = $sts;
         }
 
         return [
-            'host' => $uploadHost,
-            'storeUri' => $uploadAddr['StoreInfos'][0]["StoreUri"],
-            'token' => $uploadAddr['StoreInfos'][0]["Auth"],
-            'expireTime' => time(),
+            'expireTime' => $expireTime,
+            'uploadInfo' => $ret,
         ];
     }
 
@@ -253,7 +262,7 @@ class FresnsImageXService
 
         $data = [];
         foreach ($uploadFileInfos as $item) {
-            $data[] = $item->getFileInfo();
+            $data[] = $item;
         }
 
         return $data;
@@ -284,9 +293,9 @@ class FresnsImageXService
                 'imageSquareUrl' => $this->getTemplateFromFresns("image_thumb_square"),
                 'imageBigUrl' => $this->getTemplateFromFresns("image_thumb_big"),
 
-                'videoCoverUrl' => "",
-                'videoGifUrl' => "",
-                'videoUrl' => "",
+                'videoCoverUrl' => $this->getTemplateFromFresns("video_screenshot"),
+                'videoGifUrl' => $this->getTemplateFromFresns("video_gift"),
+                'videoUrl' => $this->getTemplateFromFresns("video_transcode"),
 
                 'audioUrl' => "",
 
@@ -295,7 +304,7 @@ class FresnsImageXService
             ];
 
             foreach ($keys as $k => $v) {
-                if (!empty($fileInfo[$k])) {
+                if ((!empty($fileInfo[$k])) || (($fileInfo['type'] == File::TYPE_VIDEO) && ($k == 'videoCoverUrl'))) {
                     $fileInfo[$k] = $this->generateUrl($file["path"], $v);
                 }
             }

@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Plugins\ImageX\Http\Controllers as WebController;
+use Plugins\ImageX\Controllers\WebController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +14,6 @@ use Plugins\ImageX\Http\Controllers as WebController;
 |
 */
 
-// Route::prefix('image-x')->group(function() {
-//     Route::get('/', [WebController\ImageXController::class, 'index']);
-// });
+Route::prefix('imagex')->group(function () {
+    Route::get('upload', [WebController::class, 'upload'])->name('imagex.upload.file');
+});

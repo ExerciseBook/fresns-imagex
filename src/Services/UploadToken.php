@@ -10,8 +10,7 @@ class UploadToken extends DTO
     {
         return [
             'type' => ['integer', 'required'],
-            'name' => ['string', 'required'],
-            'expireTime' => ['integer', 'required'],
+            'count' => ['integer'],
         ];
     }
 }
