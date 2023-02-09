@@ -3,7 +3,6 @@
 namespace Plugins\ImageX\Providers;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Plugins\ImageX\Services\FresnsImageXService;
 
 class ImageXServiceProvider extends BaseServiceProvider
 {
@@ -49,11 +48,11 @@ class ImageXServiceProvider extends BaseServiceProvider
         );
 
         $this->mergeConfigFrom(
-            dirname(__DIR__, 2).'/config/disks.php', 'fresns-imagex-filesystems'
+            dirname(__DIR__, 2) . '/config/disks.php', 'fresns-imagex-filesystems'
         );
 
         $this->publishes([
-            __DIR__.'/../../config/imagex.php' => config_path('imagex.php'),
+            __DIR__ . '/../../config/imagex.php' => config_path('imagex.php'),
         ], 'config');
     }
 
@@ -68,7 +67,7 @@ class ImageXServiceProvider extends BaseServiceProvider
 
 
         $this->publishes([
-            __DIR__.'/../../resources/views' => resource_path('views/plugins/imagex'),
+            __DIR__ . '/../../resources/views' => resource_path('views/plugins/imagex'),
         ], ['views', 'imagex-plugin-views']);
     }
 

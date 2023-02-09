@@ -2,8 +2,8 @@
 
 namespace Plugins\ImageX\Providers;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as BaseServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends BaseServiceProvider
 {

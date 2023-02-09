@@ -3,8 +3,8 @@
 namespace Plugins\ImageX\Controllers;
 
 use App\Fresns\Api\Traits\ApiResponseTrait;
-use Fresns\CmdWordManager\FresnsCmdWord;
 use Fresns\CmdWordManager\CmdWordRespons;
+use Fresns\CmdWordManager\FresnsCmdWord;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cache;

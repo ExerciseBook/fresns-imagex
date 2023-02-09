@@ -96,11 +96,11 @@ class WebController extends Controller
 
         $uploadSessionId = Str::uuid()->toString();
         Cache::set('imagex:uploadsession:' . $uploadSessionId, [
-            'platformId' => $checkHeaders['platformId'] ,
+            'platformId' => $checkHeaders['platformId'],
             'usageType' => $uploadInfo['usageType'],
-            'tableName' => $uploadInfo['tableName'] ,
-            'tableColumn' =>$uploadInfo['tableColumn'] ?? 'id' ,
-            'tableId' => $uploadInfo['tableId'] ?? null ,
+            'tableName' => $uploadInfo['tableName'],
+            'tableColumn' => $uploadInfo['tableColumn'] ?? 'id',
+            'tableId' => $uploadInfo['tableId'] ?? null,
             'tableKey' => $uploadInfo['tableKey'] ?? null,
             'aid' => $checkHeaders['aid'],
             'uid' => $checkHeaders['uid'],

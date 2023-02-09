@@ -3,10 +3,10 @@
 namespace Plugins\ImageX\Providers;
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use Symfony\Component\Finder\Finder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
+use Symfony\Component\Finder\Finder;
 
 class CommandServiceProvider extends ServiceProvider
 {
