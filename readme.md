@@ -41,4 +41,4 @@
 
 (2) Configuration page `https://console.volcengine.com/imagex/service_manage/http_config/{SERVICE_ID}/{DOMAIN}`,
 e.g. `https://console.volcengine.com/imagex/service_manage/http_config/dQw4w9WgXcQ/example.com`. This plugin only
-supports method B.
+supports method C.

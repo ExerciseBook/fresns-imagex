@@ -19,11 +19,11 @@
 | 模块	      | 配置	         | 解释                                                                                                                                                           | 例子                         |
 |----------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
 | 存储配置     | 	存储服务商	     | 选择 `ImageX Integration`                                                                                                                                      | `ImageX Integration`       | 
-|          | Secret ID	  | 从[VolcEngine IAM](https://console.volcengine.com/iam/keymanage/)获取到的 `Access Key ID`                                                                         | `AKbalabala`               |
-|          | Secret Key	 | 从[VolcEngine IAM](https://console.volcengine.com/iam/keymanage/)获取到的 `Secret Access Key`                                                                     | `SuiJiDeWenBen`            |
-|          | 存储配置名称	     | 从[VolcEngine ImageX](https://console.volcengine.com/imagex/service_manage/)获取到的 `服务 ID` 以及从[火山引擎 BAF](https://console.volcengine.com/baf/my_app/) 获得到的 AppID | `IMGBianHao,123456`        | 
-|          | 存储配置地域      | 	从[VolcEngine ImageX](https://console.volcengine.com/imagex/service_manage/)获取到的 `服务地区` (1)                                                                  | `cn-north-1`               |
-|          | 存储配置域名	     | 在[VolcEngine ImageX](https://console.volcengine.com/imagex/service_manage/)中设置的 `域名`                                                                         | `https://example.com`      |
+|          | Secret ID	  | 从[火山引擎 IAM](https://console.volcengine.com/iam/keymanage/) 获取到的 `Access Key ID`                                                                         | `AKbalabala`               |
+|          | Secret Key	 | 从[火山引擎 IAM](https://console.volcengine.com/iam/keymanage/) 获取到的 `Secret Access Key`                                                                     | `SuiJiDeWenBen`            |
+|          | 存储配置名称	     | 从[火山引擎 ImageX](https://console.volcengine.com/imagex/service_manage/) 获取到的 `服务 ID` 以及从[火山引擎 BAF](https://console.volcengine.com/baf/my_app/) 获得到的 AppID | `IMGBianHao,123456`        | 
+|          | 存储配置地域      | 	从[火山引擎 ImageX](https://console.volcengine.com/imagex/service_manage/) 获取到的 `服务地区` (1)                                                                  | `cn-north-1`               |
+|          | 存储配置域名	     | 在[火山引擎 ImageX](https://console.volcengine.com/imagex/service_manage/) 中设置的 `域名`                                                                         | `https://example.com`      |
 |          | 文件系统磁盘	     | 选择 `remote`                                                                                                                                                  | `remote`                   |
 | 功能配置     | 	防盗链 Key	   | url 鉴权密钥 (2)                                                                                                                                                 | `suijideWenben`            |
 |          | 防盗链签名有效期	   | 请保证该值小于您在（2）配置页面中配置的值                                                                                                                                        |                            |
@@ -41,4 +41,4 @@
 (2)
 配置页面地址是 `https://console.volcengine.com/imagex/service_manage/http_config/{SERVICE_ID}/{DOMAIN}`
 ，例如 `https://console.volcengine.com/imagex/service_manage/http_config/dQw4w9WgXcQ/example.com`
-。本插件只支持`鉴权方式 B`。
+。本插件只支持`鉴权方式 C`。
