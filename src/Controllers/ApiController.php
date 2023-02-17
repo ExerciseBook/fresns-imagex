@@ -3,12 +3,13 @@
 namespace Plugins\ImageX\Controllers;
 
 use App\Fresns\Api\Traits\ApiResponseTrait;
+use App\Helpers\CacheHelper;
 use Fresns\CmdWordManager\CmdWordRespons;
 use Fresns\CmdWordManager\FresnsCmdWord;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
+use Plugins\ImageX\Configuration\Constants;
 
 class ApiController extends Controller
 {
@@ -55,7 +56,7 @@ class ApiController extends Controller
             return $this->failure(30000, $v->messages()->toJson());
         }
 
-        $t = Cache::get('imagex:uploadsession:' . $data['session'], null);
+        $t = CacheHelper::get('imagex:uploadsession:' . $data['session'], Constants::$cacheTags);
         if ($t == null) {
             return $this->failure(30000, 'session invalid');
         }

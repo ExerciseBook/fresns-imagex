@@ -3,16 +3,18 @@
 
 namespace Plugins\ImageX\Services;
 
+use App\Helpers\CacheHelper;
 use App\Helpers\ConfigHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\StrHelper;
 use App\Models\File;
 use App\Utilities\FileUtility;
 use ExerciseBook\Flysystem\ImageX\ImageXAdapter;
 use ExerciseBook\Flysystem\ImageX\ImageXConfig;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use League\Flysystem\Config;
+use Plugins\ImageX\Configuration\Constants;
 use Symfony\Component\Uid\UuidV4;
 
 class FresnsImageXService
@@ -61,6 +63,7 @@ class FresnsImageXService
 
         $this->processingType = $type;
         $this->antiLinkConfigEnabled = Arr::get($settings, 'antiLinkConfigStatus', 'false');
+        \info(json_encode($config));
     }
 
     public function isImageProcessing()
@@ -202,7 +205,7 @@ class FresnsImageXService
             $storeKey = Str::uuid()->toString();
             $sts = $this->adapter->getClient()->getUploadAuth([$this->getServiceId()], $expireTime, $storeKey);
             $sts['storeKey'] = $storeKey;
-            Cache::set("imagex:sts:" . $sts['AccessKeyID'], $sts);
+            CacheHelper::put($sts, "imagex:sts:" . $sts['AccessKeyID'], Constants::$cacheTags, 1, now()->addHour(1));
             $ret[] = $sts;
         }
 
@@ -275,10 +278,12 @@ class FresnsImageXService
         }
 
         $cacheKey = 'imagex_file_antilink_' . $antiLinkFileInfo->fileIdOrFid;
-        $cacheExpireAt = now()->addSeconds(60 * 25);
 
         // 缓存
-        $data = cache()->remember($cacheKey, $cacheExpireAt, function () use ($antiLinkFileInfo) {
+        // Fresns 没有 SETNX，差评
+        $data = CacheHelper::get($cacheKey);
+        \info($data);
+        if (empty($data)) {
             $file = $this->getFileByFileIdOrFid($antiLinkFileInfo->fileIdOrFid);
             if (is_null($file)) {
                 return null;
@@ -309,11 +314,13 @@ class FresnsImageXService
                 }
             }
 
-            return $fileInfo;
-        });
+            $cacheTime = CacheHelper::fresnsCacheTimeByFileType($this->processingType);
+            CacheHelper::put($fileInfo, $cacheKey, Constants::$cacheTags, 1, $cacheTime);
+            $data = $fileInfo;
+        };
 
         if (is_null($data)) {
-            cache()->forget($cacheKey);
+            CacheHelper::forgetFresnsKey($cacheKey);
         }
 
         return $data;
@@ -321,7 +328,11 @@ class FresnsImageXService
 
     public function getFileByFileIdOrFid($fileIdOrFid)
     {
-        return File::where('id', $fileIdOrFid)->orWhere('fid', $fileIdOrFid)->first();
+        if (StrHelper::isPureInt($fileIdOrFid)) {
+            return File::where('id', $fileIdOrFid)->first();
+        } else {
+            return File::where('fid', $fileIdOrFid)->first();
+        }
     }
 
     public function getAntiLinkFileInfoList(AntiLinkFileInfoList $antiLinkFileInfoList)
@@ -365,15 +376,20 @@ class FresnsImageXService
 
     public function physicalDeletionFiles(PhysicalDeletionFiles $physicalDeletionFiles)
     {
-        $files = File::whereIn('id', $physicalDeletionFiles->fileIdsOrFids)->orWhereIn('fid', $physicalDeletionFiles->fileIdsOrFids)->get();
+        if (StrHelper::isPureInt($physicalDeletionFiles->fileIdsOrFids)) {
+            $files = File::whereIn('id', $physicalDeletionFiles->fileIdsOrFids)->first();
+        } else {
+            $files = File::whereIn('fid', $physicalDeletionFiles->fileIdsOrFids)->first();
+        }
 
         foreach ($files as $file) {
             $this->getAdapter()->delete($file->path);
             $file->delete();
 
             // 删除 防盗链 缓存
-            cache()->forget('imagex_file_antilink_' . $file->id);
-            cache()->forget('imagex_file_antilink_' . $file->fid);
+            CacheHelper::forgetFresnsFileUsage($file->fileIdsOrFids);
+            CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->id);
+            CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->fid);
         }
         return true;
     }

@@ -2,15 +2,16 @@
 
 namespace Plugins\ImageX\Controllers;
 
+use App\Helpers\CacheHelper;
 use App\Helpers\ConfigHelper;
 use App\Helpers\PrimaryHelper;
 use App\Models\FileUsage;
 use App\Utilities\ConfigUtility;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
+use Plugins\ImageX\Configuration\Constants;
 use Plugins\ImageX\Services\FresnsImageXService;
 
 class WebController extends Controller
@@ -95,7 +96,7 @@ class WebController extends Controller
         $imagexServiceId = $imagex->getServiceId();
 
         $uploadSessionId = Str::uuid()->toString();
-        Cache::set('imagex:uploadsession:' . $uploadSessionId, [
+        CacheHelper::put([
             'platformId' => $checkHeaders['platformId'],
             'usageType' => $uploadInfo['usageType'],
             'tableName' => $uploadInfo['tableName'],
@@ -105,7 +106,7 @@ class WebController extends Controller
             'aid' => $checkHeaders['aid'],
             'uid' => $checkHeaders['uid'],
             'type' => $fileType,
-        ], 3600);
+        ], 'imagex:uploadsession:' . $uploadSessionId, Constants::$cacheTags, 1, now()->addHour(1));
 
         return view('ImageX::upload', compact(
             'langTag',
