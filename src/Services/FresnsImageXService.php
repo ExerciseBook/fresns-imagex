@@ -63,7 +63,6 @@ class FresnsImageXService
 
         $this->processingType = $type;
         $this->antiLinkConfigEnabled = Arr::get($settings, 'antiLinkConfigStatus', 'false');
-        \info(json_encode($config));
     }
 
     public function isImageProcessing()
@@ -282,7 +281,6 @@ class FresnsImageXService
         // 缓存
         // Fresns 没有 SETNX，差评
         $data = CacheHelper::get($cacheKey);
-        \info($data);
         if (empty($data)) {
             $file = $this->getFileByFileIdOrFid($antiLinkFileInfo->fileIdOrFid);
             if (is_null($file)) {
@@ -298,18 +296,19 @@ class FresnsImageXService
                 'imageSquareUrl' => $this->getTemplateFromFresns("image_thumb_square"),
                 'imageBigUrl' => $this->getTemplateFromFresns("image_thumb_big"),
 
-                'videoCoverUrl' => $this->getTemplateFromFresns("video_screenshot"),
-                'videoGifUrl' => $this->getTemplateFromFresns("video_gift"),
-                'videoUrl' => $this->getTemplateFromFresns("video_transcode"),
+                'videoPosterUrl' => $this->getTemplateFromFresns("video_poster_parameter"),
+                'videoUrl' => $this->getTemplateFromFresns("video_transcode_parameter"),
 
                 'audioUrl' => "",
 
                 'documentUrl' => "",
                 'documentPreviewUrl' => "",
             ];
-
             foreach ($keys as $k => $v) {
-                if ((!empty($fileInfo[$k])) || (($fileInfo['type'] == File::TYPE_VIDEO) && ($k == 'videoCoverUrl'))) {
+                if ((!empty($fileInfo[$k])) ||
+                    (($fileInfo['type'] == File::TYPE_VIDEO) && ($k == 'videoCoverUrl' || $k == 'videoUrl')) ||
+                    (($fileInfo['type'] == File::TYPE_IMAGE) && ($k == 'image_thumb_config' || $k == 'image_thumb_avatar' || $k == 'image_thumb_ratio' || $k == 'image_thumb_square' || $k == 'image_thumb_big'))
+                ) {
                     $fileInfo[$k] = $this->generateUrl($file["path"], $v);
                 }
             }
