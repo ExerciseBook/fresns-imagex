@@ -280,7 +280,7 @@ class FresnsImageXService
 
         // 缓存
         // Fresns 没有 SETNX，差评
-        $data = CacheHelper::get($cacheKey);
+        $data = CacheHelper::get($cacheKey, Constants::$cacheTags);
         if (empty($data)) {
             $file = $this->getFileByFileIdOrFid($antiLinkFileInfo->fileIdOrFid);
             if (is_null($file)) {
@@ -289,9 +289,7 @@ class FresnsImageXService
 
             $fileInfo = $file->getFileInfo();
             $keys = [
-                'imageDefaultUrl' => "",
                 'imageConfigUrl' => $this->getTemplateFromFresns("image_thumb_config"),
-                'imageAvatarUrl' => $this->getTemplateFromFresns("image_thumb_avatar"),
                 'imageRatioUrl' => $this->getTemplateFromFresns("image_thumb_ratio"),
                 'imageSquareUrl' => $this->getTemplateFromFresns("image_thumb_square"),
                 'imageBigUrl' => $this->getTemplateFromFresns("image_thumb_big"),
@@ -301,13 +299,24 @@ class FresnsImageXService
 
                 'audioUrl' => "",
 
-                'documentUrl' => "",
                 'documentPreviewUrl' => "",
             ];
             foreach ($keys as $k => $v) {
+                if ($k == 'documentPreviewUrl') {
+                    $documentUrl = $file->getFileUrl();
+
+                    // 生成防盗链链接
+                    // $antiLinkUrl = $this->generateUrl($documentUrl);
+                    // $fileInfo['documentPreviewUrl'] = FileHelper::fresnsFileDocumentPreviewUrl($antiLinkUrl, $fileInfo['fid'], $fileInfo['extension']);
+
+                    $fileInfo['documentPreviewUrl'] = FileHelper::fresnsFileDocumentPreviewUrl($documentUrl, $fileInfo['fid'], $fileInfo['extension']);
+
+                    continue;
+                }
+
                 if ((!empty($fileInfo[$k])) ||
-                    (($fileInfo['type'] == File::TYPE_VIDEO) && ($k == 'videoCoverUrl' || $k == 'videoUrl')) ||
-                    (($fileInfo['type'] == File::TYPE_IMAGE) && ($k == 'image_thumb_config' || $k == 'image_thumb_avatar' || $k == 'image_thumb_ratio' || $k == 'image_thumb_square' || $k == 'image_thumb_big'))
+                    (($fileInfo['type'] == File::TYPE_VIDEO) && ($k == 'videoPosterUrl' || $k == 'videoUrl')) ||
+                    (($fileInfo['type'] == File::TYPE_IMAGE) && ($k == 'image_thumb_config' || $k == 'image_thumb_ratio' || $k == 'image_thumb_square' || $k == 'image_thumb_big'))
                 ) {
                     $fileInfo[$k] = $this->generateUrl($file["path"], $v);
                 }
@@ -315,11 +324,12 @@ class FresnsImageXService
 
             $cacheTime = CacheHelper::fresnsCacheTimeByFileType($this->processingType);
             CacheHelper::put($fileInfo, $cacheKey, Constants::$cacheTags, 1, $cacheTime);
+
             $data = $fileInfo;
         };
 
         if (is_null($data)) {
-            CacheHelper::forgetFresnsKey($cacheKey);
+            CacheHelper::forgetFresnsKey($cacheKey, Constants::$cacheTags);
         }
 
         return $data;
