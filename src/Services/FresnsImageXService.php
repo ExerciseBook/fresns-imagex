@@ -279,7 +279,6 @@ class FresnsImageXService
         $cacheKey = 'imagex_file_antilink_' . $antiLinkFileInfo->fileIdOrFid;
 
         // 缓存
-        // Fresns 没有 SETNX，差评
         $data = CacheHelper::get($cacheKey, Constants::$cacheTags);
         if (empty($data)) {
             $file = $this->getFileByFileIdOrFid($antiLinkFileInfo->fileIdOrFid);
@@ -303,14 +302,8 @@ class FresnsImageXService
             ];
             foreach ($keys as $k => $v) {
                 if ($k == 'documentPreviewUrl') {
-                    $documentUrl = $file->getFileUrl();
-
-                    // 生成防盗链链接
-                    // $antiLinkUrl = $this->generateUrl($documentUrl);
-                    // $fileInfo['documentPreviewUrl'] = FileHelper::fresnsFileDocumentPreviewUrl($antiLinkUrl, $fileInfo['fid'], $fileInfo['extension']);
-
+                    $documentUrl = $this->generateUrl($file["path"], $v);
                     $fileInfo['documentPreviewUrl'] = FileHelper::fresnsFileDocumentPreviewUrl($documentUrl, $fileInfo['fid'], $fileInfo['extension']);
-
                     continue;
                 }
 
