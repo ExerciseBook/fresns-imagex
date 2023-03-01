@@ -322,7 +322,7 @@ class FresnsImageXService
                 }
             }
 
-            $cacheTime = CacheHelper::fresnsCacheTimeByFileType($this->processingType);
+            $cacheTime = CacheHelper::fresnsCacheTimeByFileType($file->type);
             CacheHelper::put($fileInfo, $cacheKey, Constants::$cacheTags, 1, $cacheTime);
 
             $data = $fileInfo;
@@ -397,8 +397,8 @@ class FresnsImageXService
 
             // 删除 防盗链 缓存
             CacheHelper::forgetFresnsFileUsage($file->fileIdsOrFids);
-            CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->id);
-            CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->fid);
+            CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->id, Constants::$cacheTags);
+            CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->fid, Constants::$cacheTags);
         }
         return true;
     }
