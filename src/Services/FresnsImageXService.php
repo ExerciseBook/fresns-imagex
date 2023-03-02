@@ -46,7 +46,7 @@ class FresnsImageXService
 
 
         $config = new ImageXConfig();
-        $config->region = Arr::get($settings, 'bucketArea', 'cn-north-1');
+        $config->region = Arr::get($settings, 'bucketRegion', 'cn-north-1');
         if ($config->region == null || strlen($config->region) == 0) {
             $config->region = 'cn-north-1';
         }
