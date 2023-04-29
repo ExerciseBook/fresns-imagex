@@ -8,10 +8,11 @@
     @else
         <div class="input-group">
             <input class="form-control" type="file" id="formFile"
-                @if($uploadConfig['uploadNumber'] > 1)
-                    multiple="multiple" max="{{ $fileMax }}"
-                @endif accept="{{ $uploadConfig['inputAccept'] }}">
-            <button class="btn btn-outline-secondary ajax-progress-submit" type="button" id="do-upload-btn">{{ $fsLang['editorUploadButton'] }}</button>
+                   @if($uploadConfig['uploadNumber'] > 1)
+                       multiple="multiple" max="{{ $fileMax }}"
+                   @endif accept="{{ $uploadConfig['inputAccept'] }}">
+            <button class="btn btn-outline-secondary ajax-progress-submit"
+                    type="button" id="do-upload-btn">{{ $fsLang['editorUploadButton'] }}</button>
         </div>
         <div class="ajax-progress progress mt-2"></div>
     @endif
