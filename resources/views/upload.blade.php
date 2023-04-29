@@ -12,7 +12,7 @@
                        multiple="multiple" max="{{ $fileMax }}"
                    @endif accept="{{ $uploadConfig['inputAccept'] }}">
             <button class="btn btn-outline-secondary ajax-progress-submit"
-                    type="button" id="do-upload-btn">{{ $fsLang['editorUploadBtn'] }}</button>
+                    type="button" id="do-upload-btn">{{ $fsLang['editorUploadButton'] }}</button>
         </div>
         <div class="ajax-progress progress mt-2"></div>
     @endif

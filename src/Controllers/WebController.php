@@ -20,20 +20,20 @@ class WebController extends Controller
     {
         $fresnsResp = \FresnsCmdWord::plugin('Fresns')->verifyUrlAuthorization([
             'urlAuthorization' => $request->authorization,
+            'userLogin' => true,
         ]);
 
         $langTag = $fresnsResp->getData('langTag');
         View::share('langTag', $langTag);
 
-        $uploadInfo = json_decode(base64_decode(urldecode($request->config)), true);
-
-        $uid = $fresnsResp->getData('uid');
-        if (empty($uid)) {
+        if ($fresnsResp->isErrorResponse()) {
             return view('ImageX::error', [
-                'code' => 31601,
-                'message' => ConfigUtility::getCodeMessage(31601, 'Fresns', $langTag),
+                'code' => $fresnsResp->getCode(),
+                'message' => $fresnsResp->getMessage(),
             ]);
         }
+
+        $uploadInfo = json_decode(base64_decode(urldecode($request->config)), true);
 
         // 上传文件必传参数 https://fresns.cn/api/common/upload-file.html
         if (!$uploadInfo['usageType'] || !$uploadInfo['tableName'] || !$uploadInfo['type']) {
@@ -61,7 +61,7 @@ class WebController extends Controller
             8 => 'comment',
         };
 
-        $authUserId = PrimaryHelper::fresnsUserIdByUidOrUsername($uid);
+        $authUserId = PrimaryHelper::fresnsUserIdByUidOrUsername($fresnsResp->getData('uid'));
 
         $editorConfig = ConfigUtility::getEditorConfigByType($authUserId, $usageType, $langTag);
         $toolbar = $editorConfig['toolbar'][$uploadInfo['type']];
