@@ -35,7 +35,7 @@ class WebController extends Controller
 
         $uploadInfo = json_decode(base64_decode(urldecode($request->config)), true);
 
-        // 上传文件必传参数 https://fresns.cn/api/common/upload-file.html
+        // 上传文件必传参数 https://docs.fresns.cn/api/common/upload-file.html
         if (!$uploadInfo['usageType'] || !$uploadInfo['tableName'] || !$uploadInfo['type']) {
             return view('ImageX::error', [
                 'code' => 30002,
