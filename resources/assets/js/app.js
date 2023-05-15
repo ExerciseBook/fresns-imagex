@@ -175,22 +175,22 @@ function onUploadCompleted(data) {
         },
         success(res) {
             let searchParams = new URLSearchParams(window.location.href);
-            let message = {};
-            parent.postMessage(
-                (message = {
-                    code: 0, // 处理状态，0 表示成功，其余为失败状态码
-                    message: 'ok', // 失败时的提示信息
-                    action: {
-                        postMessageKey: searchParams.get('postMessageKey'), // 路径中 postMessageKey 变量值
-                        windowClose: true, // 是否关闭窗口或弹出层(modal)
-                        reloadData: true, // 是否重载数据
-                        redirectUrl: '', // 是否重定向新页面
-                    },
-                    data: res.data,
-                })
-            );
 
-            console.log('发送给父级的信息', message);
+            const fresnsCallbackMessage = {
+                code: 0, // 处理状态，0 表示成功，其余为失败状态码
+                message: 'ok', // 失败时的提示信息
+                action: {
+                    postMessageKey: searchParams.get('postMessageKey'), // 路径中 postMessageKey 变量值
+                    windowClose: true, // 是否关闭窗口或弹出层(modal)
+                    reloadData: true, // 是否重载数据
+                    redirectUrl: '', // 是否重定向新页面
+                },
+                data: res.data,
+            }
+
+            parent.postMessage(JSON.stringify(fresnsCallbackMessage));
+
+            console.log('发送给父级的信息', fresnsCallbackMessage);
         },
         error(e) {
             window.tips(e.message, e.code)
