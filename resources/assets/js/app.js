@@ -178,27 +178,14 @@ function onUploadCompleted(data) {
             let message = {};
             parent.postMessage(
                 (message = {
-                    postMessageKey: searchParams.get('postMessageKey'), // 路径中 postMessageKey 变量值
-                    windowClose: true, // 是否关闭窗口或弹出层(modal)
-                    variables: {
-                        // 路径中变量值原样返回
-                        type: searchParams.get('type'),
-                        scene: searchParams.get('scene'),
-                        aid: searchParams.get('aid') || aid,
-                        uid: searchParams.get('uid') || uid,
-                        rid: searchParams.get('rid'),
-                        gid: searchParams.get('gid'),
-                        pid: searchParams.get('pid'),
-                        cid: searchParams.get('cid'),
-                        eid: searchParams.get('eid'),
-                        fid: searchParams.get('fid'),
-                        plid: searchParams.get('plid'),
-                        clid: searchParams.get('clid'),
-                        uploadInfo: searchParams.get('uploadInfo'),
-                    },
-                    // 以下逻辑同 API 一致
-                    code: 0, // 处理状态，0 表示，其余为失败状态码
+                    code: 0, // 处理状态，0 表示成功，其余为失败状态码
                     message: 'ok', // 失败时的提示信息
+                    action: {
+                        postMessageKey: searchParams.get('postMessageKey'), // 路径中 postMessageKey 变量值
+                        windowClose: true, // 是否关闭窗口或弹出层(modal)
+                        reloadData: true, // 是否重载数据
+                        redirectUrl: '', // 是否重定向新页面
+                    },
                     data: res.data,
                 })
             );
