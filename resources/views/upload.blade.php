@@ -53,6 +53,10 @@
 
         const fileInput = document.querySelector("input[type=file]");
         fileInput.addEventListener("change", async function () {
+            console.log(this)
+            let video_file = document.getElementById('formFile').files[0];
+            // 这里可以打印出视频文件的size大小
+
             if (this.files.length > {{ $fileMax }}) {
                 alert("{{ $fsLang['editorUploadNumber'] }}: {{ $fileMax }}");
                 this.value = "";
@@ -66,9 +70,10 @@
                 }
 
                 try {
-                    const video = await loadVideo(this.currentTarget.files[0])
+                    const video = await loadVideo(this.files[0])
+         
                     const videoDuration = video.duration
-                    if (typeof videoDuration === "number" && !isNaN(videoDuration) && videoDuration > {{ $uploadConfig['maxTime'] }}) {
+                    if (typeof videoDuration === "number" && !isNaN(videoDuration) && parseInt(videoDuration) > {{ $uploadConfig['maxTime'] }}) {
                         alert("{{ $fsLang['editorUploadMaxTime'] }}: {{ $uploadConfig['maxTime'] }} {{ $fsLang['unitSecond'] }}");
                         this.value = "";
                     }
@@ -124,4 +129,3 @@
         }
     </script>
 @endpush
-
