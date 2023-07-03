@@ -53,10 +53,7 @@
 
         const fileInput = document.querySelector("input[type=file]");
         fileInput.addEventListener("change", async function () {
-            console.log(this)
             let video_file = document.getElementById('formFile').files[0];
-            // 这里可以打印出视频文件的size大小
-
             if (this.files.length > {{ $fileMax }}) {
                 alert("{{ $fsLang['editorUploadNumber'] }}: {{ $fileMax }}");
                 this.value = "";
