@@ -19,7 +19,7 @@ use Symfony\Component\Uid\UuidV4;
 
 class FresnsImageXService
 {
-    protected int $storageId = 21;
+    protected int $storageId = File::STORAGE_VOLC_ENGINE;
 
     private ImageXConfig $imagexConfig;
 
