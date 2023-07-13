@@ -378,18 +378,18 @@ class FresnsImageXService
 
     public function physicalDeletionFiles(PhysicalDeletionFiles $physicalDeletionFiles)
     {
-        if (StrHelper::isPureInt($physicalDeletionFiles->fileIdsOrFids)) {
-            $files = File::whereIn('id', $physicalDeletionFiles->fileIdsOrFids)->first();
-        } else {
-            $files = File::whereIn('fid', $physicalDeletionFiles->fileIdsOrFids)->first();
-        }
+        foreach ($physicalDeletionFiles->fileIdsOrFids as $id) {
+            if (StrHelper::isPureInt($id)) {
+                $file = File::where('id', $id)->first();
+            } else {
+                $file = File::where('fid', $id)->first();
+            }
 
-        foreach ($files as $file) {
             $this->getAdapter()->delete($file->path);
-            $file->delete();
+            $file->forceDelete();
 
             // 删除 防盗链 缓存
-            CacheHelper::forgetFresnsFileUsage($file->fileIdsOrFids);
+            CacheHelper::forgetFresnsFileUsage($file->fid);
             CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->id, Constants::$cacheTags);
             CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->fid, Constants::$cacheTags);
         }
