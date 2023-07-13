@@ -8,10 +8,11 @@
     @else
         <div class="input-group">
             <input class="form-control" type="file" id="formFile"
-                @if($uploadConfig['uploadNumber'] > 1)
-                    multiple="multiple" max="{{ $fileMax }}"
-                @endif accept="{{ $uploadConfig['inputAccept'] }}">
-            <button class="btn btn-outline-secondary ajax-progress-submit" type="button" id="do-upload-btn">{{ $fsLang['editorUploadButton'] }}</button>
+                   @if($uploadConfig['uploadNumber'] > 1)
+                       multiple="multiple" max="{{ $fileMax }}"
+                   @endif accept="{{ $uploadConfig['inputAccept'] }}">
+            <button class="btn btn-outline-secondary ajax-progress-submit" type="button"
+                    id="do-upload-btn">{{ $fsLang['editorUploadButton'] }}</button>
         </div>
         <div class="ajax-progress progress mt-2"></div>
     @endif
@@ -34,11 +35,48 @@
 
 @push('script')
     <script>
+        const loadVideo = file => new Promise((resolve, reject) => {
+            try {
+                let video = document.createElement('video')
+                video.preload = 'metadata'
+                video.onloadedmetadata = function () {
+                    resolve(this)
+                }
+                video.onerror = function () {
+                    reject("Invalid video. Please select a video file.")
+                }
+                video.src = window.URL.createObjectURL(file)
+            } catch (e) {
+                reject(e)
+            }
+        })
+
         const fileInput = document.querySelector("input[type=file]");
-        fileInput.addEventListener("change", function () {
+        fileInput.addEventListener("change", async function () {
+            let video_file = document.getElementById('formFile').files[0];
             if (this.files.length > {{ $fileMax }}) {
                 alert("{{ $fsLang['editorUploadNumber'] }}: {{ $fileMax }}");
                 this.value = "";
+            }
+            for (let i = 0; i <= this.files.length - 1; i++) {
+                const fsize = this.files.item(i).size;
+                const file = Math.round((fsize / 1024 / 1024));
+                if (file >= {{ $uploadConfig['maxSize'] }}) {
+                    alert("{{ $fsLang['editorUploadMaxSize'] }} : {{ $uploadConfig['maxSize'] }} MB");
+                    this.value = "";
+                }
+
+                try {
+                    const video = await loadVideo(this.files[0])
+         
+                    const videoDuration = video.duration
+                    if (typeof videoDuration === "number" && !isNaN(videoDuration) && parseInt(videoDuration) > {{ $uploadConfig['maxTime'] }}) {
+                        alert("{{ $fsLang['editorUploadMaxTime'] }}: {{ $uploadConfig['maxTime'] }} {{ $fsLang['unitSecond'] }}");
+                        this.value = "";
+                    }
+                } catch (e) {
+                    console.error("get video duration failed", e)
+                }
             }
         });
 
@@ -88,4 +126,3 @@
         }
     </script>
 @endpush
-
