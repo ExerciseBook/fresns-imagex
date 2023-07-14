@@ -70,7 +70,7 @@ class ApiController extends Controller
             'md5' => '',
             'sha' => '',
             'shaType' => '',
-            'path' => $uploadResult['SourceUri'],
+            'path' => $uploadResult['FileName'],
             'imageWidth' => intval($uploadResult['ImageWidth']) ?? 0,
             'imageHeight' => intval($uploadResult['ImageHeight']) ?? 0,
             'videoTime' => 0,

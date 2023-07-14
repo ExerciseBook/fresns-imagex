@@ -385,8 +385,17 @@ class FresnsImageXService
                 $file = File::where('fid', $id)->first();
             }
 
-            $this->getAdapter()->delete($file->path);
-            $file->forceDelete();
+            // 兼容旧版本的错误逻辑
+            $uriPrefix = $this->getAdapter()->getUriPrefix() . '/';
+            $path = $file->path;
+            if (str_starts_with($path, $uriPrefix)) {
+                $path = substr($path, strlen($uriPrefix));
+            }
+            $this->getAdapter()->delete($path);
+            $file->update([
+                'physical_deletion' => 1,
+            ]);
+            $file->delete();
 
             // 删除 防盗链 缓存
             CacheHelper::forgetFresnsFileUsage($file->fid);
