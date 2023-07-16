@@ -182,8 +182,8 @@ function onUploadCompleted(data) {
                 action: {
                     postMessageKey: searchParams.get('postMessageKey'), // 路径中 postMessageKey 变量值
                     windowClose: true, // 是否关闭窗口或弹出层(modal)
-                    reloadData: true, // 是否重载数据
                     redirectUrl: '', // 是否重定向新页面
+                    dataHandler: 'add' // 是否处理数据: add, remove, reload
                 },
                 data: res.data,
             }
