@@ -296,9 +296,9 @@ class FresnsImageXService
                 'videoPosterUrl' => $this->getTemplateFromFresns("video_poster_parameter"),
                 'videoUrl' => $this->getTemplateFromFresns("video_transcode_parameter"),
 
-                'audioUrl' => "",
+                'audioUrl' => $this->getTemplateFromFresns("audio_transcode_parameter"),
 
-                'documentPreviewUrl' => "",
+                'documentPreviewUrl' => $this->getTemplateFromFresns("document_online_preview"),
             ];
             foreach ($keys as $k => $v) {
                 if ($k == 'documentPreviewUrl') {
