@@ -108,7 +108,8 @@ class WebController extends Controller
             'type' => $fileType,
         ], 'imagex:uploadsession:' . $uploadSessionId, Constants::$cacheTags, 1, now()->addHour(1));
 
-        return view('ImageX::upload', compact(
+        return \response()
+           ->view('ImageX::upload', compact(
             'langTag',
             'fileType',
             'checkHeaders',
@@ -120,7 +121,7 @@ class WebController extends Controller
             'imagexClientAppId',
             'imagexServiceId',
             'uploadSessionId',
-        ));
+        ),200)->header('Cache-Control', 'no-cache');
     }
 
 }
