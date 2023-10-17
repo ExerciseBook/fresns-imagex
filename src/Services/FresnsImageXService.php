@@ -315,7 +315,7 @@ class FresnsImageXService
                 }
             }
 
-            $cacheTime = CacheHelper::fresnsCacheTimeByFileType($file->type);
+            $cacheTime = CacheHelper::fresnsCacheTimeByFileType($file->type, null, 2);
             CacheHelper::put($fileInfo, $cacheKey, Constants::$cacheTags, 1, $cacheTime);
 
             $data = $fileInfo;
