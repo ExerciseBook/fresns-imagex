@@ -12,14 +12,18 @@
     <link rel="stylesheet" href="{{ @asset('/static/css/select2-bootstrap-5-theme.min.css') }}">
 
 </head>
+
 <body>
-@yield('content')
-<div class="fresns-tips"></div>
-<script src="{{ @asset('/static/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ @asset('/static/js/jquery.min.js') }}"></script>
-<script src="{{ @asset('/static/js/select2.min.js') }}"></script>
-<script src="https://unpkg.byted-static.com/tt-uploader/1.0.15/dist/index.js"></script>
-<script src="{{ @asset('/assets/ImageX/js/app.js') }}"></script>
-@stack('script')
+    @yield('content')
+
+    <div class="fresns-tips"></div>
+
+    <script src="//res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    <script src="{{ @asset('/static/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ @asset('/static/js/jquery.min.js') }}"></script>
+    <script src="{{ @asset('/static/js/select2.min.js') }}"></script>
+    <script src="https://unpkg.byted-static.com/tt-uploader/1.0.15/dist/index.js"></script>
+    <script src="{{ @asset('/assets/ImageX/js/app.js') }}"></script>
+    @stack('script')
 </body>
 </html>

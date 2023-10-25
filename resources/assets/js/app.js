@@ -188,7 +188,40 @@ function onUploadCompleted(data) {
                 data: res.data,
             }
 
-            parent.postMessage(JSON.stringify(fresnsCallbackMessage));
+            const messageString = JSON.stringify(fresnsCallbackMessage);
+            const userAgent = navigator.userAgent.toLowerCase();
+
+            switch (true) {
+                case (window.Android !== undefined):
+                    // Android (addJavascriptInterface)
+                    window.Android.receiveMessage(messageString);
+                    break;
+
+                case (window.webkit && window.webkit.messageHandlers.iOSHandler !== undefined):
+                    // iOS (WKScriptMessageHandler)
+                    window.webkit.messageHandlers.iOSHandler.postMessage(messageString);
+                    break;
+
+                case (window.FresnsJavascriptChannel !== undefined):
+                    // Flutter
+                    window.FresnsJavascriptChannel.postMessage(messageString);
+                    break;
+
+                case (window.ReactNativeWebView !== undefined):
+                    // React Native WebView
+                    window.ReactNativeWebView.postMessage(messageString);
+                    break;
+
+                case (userAgent.indexOf('miniprogram') > -1):
+                    // WeChat Mini Program
+                    wx.miniProgram.postMessage({ data: messageString });
+                    wx.miniProgram.navigateBack();
+                    break;
+
+                // Web
+                default:
+                    parent.postMessage(messageString, '*');
+            }
 
             console.log('发送给父级的信息', fresnsCallbackMessage);
         },
