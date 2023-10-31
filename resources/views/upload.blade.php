@@ -68,7 +68,7 @@
 
                 try {
                     const video = await loadVideo(this.files[0])
-         
+
                     const videoDuration = video.duration
                     if (typeof videoDuration === "number" && !isNaN(videoDuration) && parseInt(videoDuration) > {{ $uploadConfig['maxTime'] }}) {
                         alert("{{ $fsLang['editorUploadMaxTime'] }}: {{ $uploadConfig['maxTime'] }} {{ $fsLang['unitSecond'] }}");
@@ -117,8 +117,14 @@
             applyUploadToken({
                 filesCount: fileInput.files.length,
                 type: {{ $fileType }}
-            }).then((e) => {
+            }).then(e => {
                 return uploadFile(ttUploader, fileInput.files, e)
+            }).then(async e => {
+                const userAgent = navigator.userAgent.toLowerCase();
+                if (userAgent.indexOf('miniprogram') > -1) {
+                    await Promise.all(e.promiseHandler)
+                    wx.miniProgram.navigateBack();
+                }
             }).catch((e) => {
                 window.tips(e.message, e.code)
                 progressExit() && progressExit();

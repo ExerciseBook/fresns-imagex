@@ -133,6 +133,10 @@ function applyUploadToken(data) {
 }
 
 const FileInfo = {};
+const FileFinishCallback = {};
+const TaskInfo = {
+    promiseHandler: []
+};
 
 /**
  * @param {TTUploader} ttUploader
@@ -149,8 +153,12 @@ function uploadFile(ttUploader, fileList, d) {
             storeKey: uploadInfo[i]['storeKey'],
         })
         FileInfo[key] = uploadInfo[i]
+        TaskInfo.promiseHandler.push(new Promise((resolve, reject) => {
+            FileFinishCallback[key] = resolve
+        }))
         ttUploader.start(key)
     }
+    return TaskInfo
 }
 
 function onUploadProgress(data) {
@@ -162,6 +170,7 @@ function onUploadCompleted(data) {
 
     const key = data.key;
     const fileInfo = FileInfo[key];
+    const userAgent = navigator.userAgent.toLowerCase();
 
     $.ajax({
         url: '/api/imagex/files/' + fileInfo['AccessKeyID'] + '?session=' + uploadSessionId,
@@ -189,7 +198,6 @@ function onUploadCompleted(data) {
             }
 
             const messageString = JSON.stringify(fresnsCallbackMessage);
-            const userAgent = navigator.userAgent.toLowerCase();
 
             switch (true) {
                 case (window.Android !== undefined):
@@ -214,8 +222,7 @@ function onUploadCompleted(data) {
 
                 case (userAgent.indexOf('miniprogram') > -1):
                     // WeChat Mini Program
-                    wx.miniProgram.postMessage({ data: messageString });
-                    wx.miniProgram.navigateBack();
+                    wx.miniProgram.postMessage({data: messageString});
                     break;
 
                 // Web
@@ -224,6 +231,7 @@ function onUploadCompleted(data) {
             }
 
             console.log('发送给父级的信息', fresnsCallbackMessage);
+            FileFinishCallback[key]();
         },
         error(e) {
             window.tips(e.message, e.code)
