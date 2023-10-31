@@ -133,6 +133,8 @@ function applyUploadToken(data) {
 }
 
 const FileInfo = {};
+window.fileTotalCount = 0;
+window.fileUploadSuccessCount = 0;
 
 /**
  * @param {TTUploader} ttUploader
@@ -142,6 +144,7 @@ const FileInfo = {};
 function uploadFile(ttUploader, fileList, d) {
     progressInit() && progressInit();
     const uploadInfo = d['uploadInfo']
+    window.fileTotalCount = fileList.length;
     for (let i = 0; i < fileList.length; i++) {
         const key = ttUploader.addImageFile({
             file: fileList[i],
@@ -175,6 +178,8 @@ function onUploadCompleted(data) {
         },
         success(res) {
             let searchParams = new URLSearchParams(window.location.href);
+
+            window.fileUploadSuccessCount++;
 
             const fresnsCallbackMessage = {
                 code: 0, // 处理状态，0 表示成功，其余为失败状态码
@@ -215,7 +220,9 @@ function onUploadCompleted(data) {
                 case (userAgent.indexOf('miniprogram') > -1):
                     // WeChat Mini Program
                     wx.miniProgram.postMessage({ data: messageString });
-                    wx.miniProgram.navigateBack();
+                    if (window.fileUploadSuccessCount === window.fileTotalCount) {
+                         wx.miniProgram.navigateBack();
+                    }
                     break;
 
                 // Web
