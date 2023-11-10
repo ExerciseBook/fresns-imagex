@@ -277,6 +277,11 @@ class FresnsImageXService
         }
 
         $cacheKey = 'imagex_file_antilink_' . $antiLinkFileInfo->fileIdOrFid;
+        $storageConfig = FileHelper::fresnsFileStorageConfigByType($antiLinkFileInfo->type);
+        
+        if ($storageConfig['antiLinkStatus']) {
+            CacheHelper::forgetFresnsKey($cacheKey, Constants::$cacheTags);
+        }
 
         // 缓存
         $data = CacheHelper::get($cacheKey, Constants::$cacheTags);
