@@ -171,6 +171,7 @@ function onUploadCompleted(data) {
     const key = data.key;
     const fileInfo = FileInfo[key];
     const userAgent = navigator.userAgent.toLowerCase();
+    data.uploadResult.FileName = data.fileName;
 
     $.ajax({
         url: '/api/imagex/files/' + fileInfo['AccessKeyID'] + '?session=' + uploadSessionId,
