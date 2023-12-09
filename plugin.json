@@ -5,7 +5,7 @@
     "description": "ImageX integration for fresns",
     "author": "Eric_Lian",
     "authorLink": "https://superexercisebook.com/",
-    "version": "1.7.2",
+    "version": "1.7.3",
     "scene": [
         "storage"
     ],
