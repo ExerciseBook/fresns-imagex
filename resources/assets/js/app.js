@@ -151,6 +151,7 @@ function uploadFile(ttUploader, fileList, d) {
             file: fileList[i],
             stsToken: uploadInfo[i],
             storeKey: uploadInfo[i]['storeKey'],
+            fileName: fileList[i].name,
         })
         FileInfo[key] = uploadInfo[i]
         TaskInfo.promiseHandler.push(new Promise((resolve, reject) => {
