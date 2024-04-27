@@ -1,35 +1,34 @@
 @extends('ImageX::layouts.master')
 
 @section('content')
-    @if ($fileCount >= $uploadConfig['uploadNumber'])
-        <div class="alert alert-danger" role="alert">
-            {{ $fileCountTip }}
-        </div>
-    @else
+    <div style="max-width: 90%; margin: auto; padding-top: 2em">
         <div class="input-group">
             <input class="form-control" type="file" id="formFile"
-                   @if($uploadConfig['uploadNumber'] > 1)
-                       multiple="multiple" max="{{ $fileMax }}"
-                   @endif accept="{{ $uploadConfig['inputAccept'] }}">
+                   @if( $maxUploadNumber > 1)
+                       multiple="multiple" max="{{ $maxUploadNumber }}"
+                   @endif
+                   accept="{{ $uploadConfig['inputAccept'] }}">
             <button class="btn btn-outline-secondary ajax-progress-submit" type="button"
-                    id="do-upload-btn">{{ $fsLang['editorUploadButton'] }}</button>
+                    id="do-upload-btn">{{ $fsLang['uploadButton'] }}</button>
         </div>
         <div class="ajax-progress progress mt-2"></div>
-    @endif
 
-    <div class="mx-2 mt-3 text-secondary fs-7" id="extensions" data-value="{{ $uploadConfig['extensions'] }}">
-        {{ $fsLang['editorUploadExtensions'] }}: {{ $uploadConfig['extensions'] }}
-    </div>
-    <div class="mx-2 mt-2 text-secondary fs-7" id="uploadMaxSize" data-value="{{ $uploadConfig['maxSize'] }}">
-        {{ $fsLang['editorUploadMaxSize'] }} : {{ $uploadConfig['maxSize'] }} MB
-    </div>
-    @if ($uploadConfig['maxTime'] > 0)
-        <div class="mx-2 mt-2 text-secondary fs-7" id="uploadMaxTime" data-value="{{ $uploadConfig['maxTime'] }}">
-            {{ $fsLang['editorUploadMaxTime'] }}: {{ $uploadConfig['maxTime'] }} {{ $fsLang['unitSecond'] }}
+
+        <div class="mx-2 mt-3 text-secondary fs-7" id="extensions" data-value="{{ $extensionNames }}">
+            {{ $fsLang['uploadTipExtensions'] }}: {{ $extensionNames }}
         </div>
-    @endif
-    <div class="mx-2 my-2 text-secondary fs-7" id="uploadFileMax" data-value="{{ $fileMax }}">
-        {{ $fsLang['editorUploadNumber'] }}: {{ $fileMax }}
+        <div class="mx-2 mt-2 text-secondary fs-7" id="uploadMaxSize" data-value="{{ $maxSize }}">
+            {{ $fsLang['uploadTipMaxSize'] }}: {{ $maxSize }} MB
+        </div>
+        @if ($fileType == 'video' || $fileType == 'audio')
+            <div class="mx-2 mt-2 text-secondary fs-7" id="uploadMaxTime" data-value="{{ $maxDuration }}">
+                {{ $fsLang['uploadTipMaxDuration'] }}: {{ $maxDuration }} {{ $fsLang['unitSecond'] }}
+            </div>
+        @endif
+        <div class="mx-2 my-2 text-secondary fs-7" id="uploadFileMax" data-value="{{ $maxUploadNumber }}">
+            {{ $fsLang['uploadTipMaxNumber'] }}: {{ $maxUploadNumber }}
+        </div>
+
     </div>
 @endsection
 
@@ -54,29 +53,31 @@
         const fileInput = document.querySelector("input[type=file]");
         fileInput.addEventListener("change", async function () {
             let video_file = document.getElementById('formFile').files[0];
-            if (this.files.length > {{ $fileMax }}) {
-                alert("{{ $fsLang['editorUploadNumber'] }}: {{ $fileMax }}");
+            if (this.files.length > {{ $maxUploadNumber  }}) {
+                alert("{{ $fsLang['uploadTipMaxNumber'] }}: {{ $maxUploadNumber }}");
                 this.value = "";
             }
             for (let i = 0; i <= this.files.length - 1; i++) {
                 const fsize = this.files.item(i).size;
                 const file = Math.round((fsize / 1024 / 1024));
                 if (file >= {{ $uploadConfig['maxSize'] }}) {
-                    alert("{{ $fsLang['editorUploadMaxSize'] }} : {{ $uploadConfig['maxSize'] }} MB");
+                    alert("{{ $fsLang['uploadTipMaxSize'] }} : {{ $uploadConfig['maxSize'] }} MB");
                     this.value = "";
                 }
 
-                try {
-                    const video = await loadVideo(this.files[0])
+                @if ($fileType == 'video' || $fileType == 'audio')
+                    try {
+                    const video = await loadVideo(this.files[i])
 
                     const videoDuration = video.duration
-                    if (typeof videoDuration === "number" && !isNaN(videoDuration) && parseInt(videoDuration) > {{ $uploadConfig['maxTime'] }}) {
-                        alert("{{ $fsLang['editorUploadMaxTime'] }}: {{ $uploadConfig['maxTime'] }} {{ $fsLang['unitSecond'] }}");
+                    if (typeof videoDuration === "number" && !isNaN(videoDuration) && parseInt(videoDuration) > {{ $maxDuration }}) {
+                        alert("{{ $fsLang['uploadWarningMaxDuration'] }}: {{ $maxDuration }} {{ $fsLang['unitSecond'] }}");
                         this.value = "";
                     }
                 } catch (e) {
                     console.error("get video duration failed", e)
                 }
+                @endif
             }
         });
 
@@ -116,7 +117,7 @@
 
             applyUploadToken({
                 filesCount: fileInput.files.length,
-                type: {{ $fileType }}
+                type: {{ $typeInt }}
             }).then(e => {
                 return uploadFile(ttUploader, fileInput.files, e)
             }).then(async e => {

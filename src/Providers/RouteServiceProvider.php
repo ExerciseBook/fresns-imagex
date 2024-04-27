@@ -27,7 +27,6 @@ class RouteServiceProvider extends BaseServiceProvider
     public function map()
     {
         $this->mapApiRoutes();
-
         $this->mapWebRoutes();
     }
 

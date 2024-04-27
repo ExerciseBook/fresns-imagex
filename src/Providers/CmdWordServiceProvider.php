@@ -4,12 +4,13 @@
 namespace Plugins\ImageX\Providers;
 
 use Fresns\CmdWordManager\Contracts\CmdWordProviderContract;
+use Fresns\CmdWordManager\Traits\CmdWordProviderTrait;
 use Illuminate\Support\ServiceProvider;
 use Plugins\ImageX\Services\CmdWordService;
 
 class CmdWordServiceProvider extends ServiceProvider implements CmdWordProviderContract
 {
-    use \Fresns\CmdWordManager\Traits\CmdWordProviderTrait;
+    use CmdWordProviderTrait;
 
     protected $fsKeyName = 'ImageX';
 
@@ -25,7 +26,6 @@ class CmdWordServiceProvider extends ServiceProvider implements CmdWordProviderC
         ['word' => 'getAntiLinkFileOriginalUrl', 'provider' => [CmdWordService::class, 'getAntiLinkFileOriginalUrl']],
         ['word' => 'logicalDeletionFiles', 'provider' => [CmdWordService::class, 'logicalDeletionFiles']],
         ['word' => 'physicalDeletionFiles', 'provider' => [CmdWordService::class, 'physicalDeletionFiles']],
-        ['word' => 'audioVideoTranscoding', 'provider' => [CmdWordService::class, 'audioVideoTranscoding']],
     ];
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Plugins\ImageX\Services;
 
+use App\Utilities\ConfigUtility;
 use Fresns\CmdWordManager\Traits\CmdWordResponseTrait;
 use Illuminate\Support\Facades\Log;
 
@@ -26,6 +27,9 @@ class CmdWordService
         $uploadFile = new UploadFile($wordBody);
         $imagexService = new FresnsImageXService($uploadFile->type);
         $ret = $imagexService->uploadFile($uploadFile);
+        if (empty($ret)) {
+            return $this->failure(32104, ConfigUtility::getCodeMessage(32104));
+        }
         return $this->success($ret);
     }
 
@@ -76,11 +80,6 @@ class CmdWordService
         $physicalDeletionFiles = new PhysicalDeletionFiles($wordBody);
         $imagexService = new FresnsImageXService($physicalDeletionFiles->type);
         $imagexService->physicalDeletionFiles($physicalDeletionFiles);
-        return $this->success();
-    }
-
-    public function audioVideoTranscoding(array $wordBody)
-    {
         return $this->success();
     }
 }

@@ -4,10 +4,11 @@ namespace Plugins\ImageX\Controllers;
 
 use App\Fresns\Api\Traits\ApiResponseTrait;
 use App\Helpers\CacheHelper;
-use Fresns\CmdWordManager\CmdWordRespons;
+use App\Helpers\FileHelper;
 use Fresns\CmdWordManager\FresnsCmdWord;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Validator;
 use Plugins\ImageX\Configuration\Constants;
 
@@ -18,7 +19,6 @@ class ApiController extends Controller
     public function applyUpload(Request $request)
     {
         $data = $request->all();
-
         $v = Validator::make($data, [
             'type' => ['integer', 'required'],
             'count' => ['integer'],
@@ -28,9 +28,6 @@ class ApiController extends Controller
             return $this->failure(30000, $v->messages()->toJson());
         }
 
-        /**
-         * @var CmdWordRespons $data
-         */
         $uploadTokenResp = FresnsCmdWord::plugin('ImageX')->getUploadToken([
             'type' => $data['type'],
             'count' => $data['filesCount'] ?? 1,
@@ -39,7 +36,6 @@ class ApiController extends Controller
         if ($uploadTokenResp->isErrorResponse()) {
             return $uploadTokenResp->getErrorResponse();
         }
-
         return $uploadTokenResp->getOrigin();
     }
 
@@ -61,11 +57,23 @@ class ApiController extends Controller
             return $this->failure(30000, 'session invalid');
         }
 
+        $platformId = Cookie::get('fresns_plugin_cloudinary_platform_id');
+        $authUid = Cookie::get('fresns_plugin_cloudinary_auth_uid');
+
+        $t['platformId'] = $platformId;
+        $t['usageType'] = $request->attributes->get('usageType');
+        $t['tableName'] = $request->attributes->get('tableName');
+        $t['tableColumn'] = $request->attributes->get('tableColumn');
+        $t['tableId'] = $request->attributes->get('tableId');
+        $t['tableKey'] = $request->attributes->get('tableKey');
+        $t['uid'] = $authUid;
+        $t['uploaded'] = true;
+
         $uploadResult = $data['uploadResult'];
         $fileInfo = [
             'name' => $uploadResult['FileName'],
             'mime' => '',
-            'extension' => '',
+            'extension' => pathinfo($uploadResult['FileName'], PATHINFO_EXTENSION),
             'size' => $uploadResult['ImageSize'], // 单位 Byte
             'md5' => '',
             'sha' => '',
@@ -81,16 +89,19 @@ class ApiController extends Controller
             'originalPath' => null,
             'rating' => null,
             'remark' => null,
+            'type' => $t['type'],
+            'width' => null,
+            'height' => null,
         ];
 
-        $bodyInfo = $t;
-        $bodyInfo['fileInfo'] = [$fileInfo];
-
-        $fresnsResp = FresnsCmdWord::plugin('Fresns')->uploadFileInfo($bodyInfo);
-        if ($fresnsResp->isErrorResponse()) {
-            return $fresnsResp->getErrorResponse();
+        $commitRpcReq = $t;
+        $commitRpcReq['fileInfo'] = $fileInfo;
+        $commitRpcResp = FresnsCmdWord::plugin('ImageX')->uploadFileInfo($commitRpcReq);
+        if ($commitRpcResp->isErrorResponse()) {
+            return $commitRpcResp->getErrorResponse();
         }
 
-        return $fresnsResp->getOrigin();
+        $fileInfo = FileHelper::fresnsFileInfoById($commitRpcResp->getData('fid'), $t);
+        return $this->success($fileInfo);
     }
 }

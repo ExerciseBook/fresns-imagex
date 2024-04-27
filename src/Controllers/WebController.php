@@ -4,12 +4,12 @@ namespace Plugins\ImageX\Controllers;
 
 use App\Helpers\CacheHelper;
 use App\Helpers\ConfigHelper;
+use App\Helpers\FileHelper;
 use App\Helpers\PrimaryHelper;
-use App\Models\FileUsage;
+use App\Models\File;
 use App\Utilities\ConfigUtility;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Plugins\ImageX\Configuration\Constants;
 use Plugins\ImageX\Services\FresnsImageXService;
@@ -18,108 +18,96 @@ class WebController extends Controller
 {
     public function upload(Request $request)
     {
-        $fresnsResp = \FresnsCmdWord::plugin('Fresns')->verifyUrlAuthorization([
-            'urlAuthorization' => $request->authorization,
-            'userLogin' => true,
-        ]);
+        $langTag = $request->attributes->get('langTag');
+        $authUid = $request->attributes->get('authUid');
+        $usageType = $request->attributes->get('usageType');
+        $fileType = $request->attributes->get('fileType');
+        $aid = $request->attributes->get('aid');
+        $uid = $request->attributes->get('uid');
 
-        $langTag = $fresnsResp->getData('langTag');
-        View::share('langTag', $langTag);
-
-        if ($fresnsResp->isErrorResponse()) {
-            return view('ImageX::error', [
-                'code' => $fresnsResp->getCode(),
-                'message' => $fresnsResp->getMessage(),
-            ]);
-        }
-
-        $uploadInfo = json_decode(base64_decode(urldecode($request->config)), true);
-
-        // 上传文件必传参数 https://docs.fresns.cn/api/common/upload-file.html
-        if (!$uploadInfo['usageType'] || !$uploadInfo['tableName'] || !$uploadInfo['type']) {
-            return view('ImageX::error', [
-                'code' => 30002,
-                'message' => ConfigUtility::getCodeMessage(30002, 'Fresns', $langTag),
-            ]);
-        }
-        if (!$uploadInfo['tableId'] && !$uploadInfo['tableKey']) {
-            return view('ImageX::error', [
-                'code' => 30002,
-                'message' => ConfigUtility::getCodeMessage(30001, 'Fresns', $langTag),
-            ]);
-        }
-
-        // 获取文件配置
-        $fileType = match ($uploadInfo['type']) {
-            'image' => 1,
-            'video' => 2,
-            'audio' => 3,
-            'document' => 4,
-        };
-        $usageType = match ($uploadInfo['usageType']) {
-            7 => 'post',
-            8 => 'comment',
-        };
-
-        $authUserId = PrimaryHelper::fresnsUserIdByUidOrUsername($fresnsResp->getData('uid'));
-
-        $editorConfig = ConfigUtility::getEditorConfigByType($authUserId, $usageType, $langTag);
-        $toolbar = $editorConfig['toolbar'][$uploadInfo['type']];
-
-        $uploadConfig = [
-            'status' => $toolbar['status'],
-            'extensions' => $toolbar['extensions'],
-            'inputAccept' => $toolbar['inputAccept'],
-            'maxSize' => $toolbar['maxSize'],
-            'maxTime' => $toolbar['maxTime'] ?? 0,
-            'uploadNumber' => $toolbar['uploadNumber'],
+        $checkHeaders = [
+            'aid' => $aid,
+            'uid' => $uid,
         ];
 
-        $fsLang = ConfigHelper::fresnsConfigByItemKey('language_pack_contents', $langTag);
+        $authUserId = PrimaryHelper::fresnsPrimaryId('user', $authUid);
 
-        $checkHeaders = $fresnsResp->getData();
+        $publishType = match ($usageType) {
+            'post' => 'post',
+            'comment' => 'comment',
+            'postDraft' => 'post',
+            'commentDraft' => 'comment',
+            default => null,
+        };
 
-        // 判断上传文件数量
-        $fileCount = FileUsage::where('file_type', $fileType)
-            ->where('usage_type', $uploadInfo['usageType'])
-            ->where('table_name', $uploadInfo['tableName'])
-            ->where('table_column', $uploadInfo['tableColumn'])
-            ->where('table_id', $uploadInfo['tableId'])
-            ->count();
+        $uploadConfig = [];
+        if ($publishType) {
+            $editorConfig = ConfigUtility::getEditorConfigByType($publishType, $authUserId, $langTag);
 
-        $fileCountTip = ConfigUtility::getCodeMessage(36115, 'Fresns', $langTag);
+            $uploadConfig = $editorConfig[$fileType];
+        }
 
-        $fileMax = $uploadConfig['uploadNumber'] - $fileCount;
+        $typeInt = match ($fileType) {
+            'image' => File::TYPE_IMAGE,
+            'video' => File::TYPE_VIDEO,
+            'audio' => File::TYPE_AUDIO,
+            'document' => File::TYPE_DOCUMENT,
+            default => null,
+        };
 
-        $imagex = new FresnsImageXService($fileType);
+        $inputAccept = FileHelper::fresnsFileAcceptByType($typeInt);
+        $extensionNames = match ($fileType) {
+            'image' => ConfigHelper::fresnsConfigByItemKey('image_extension_names'),
+            'video' => ConfigHelper::fresnsConfigByItemKey('video_extension_names'),
+            'audio' => ConfigHelper::fresnsConfigByItemKey('audio_extension_names'),
+            'document' => ConfigHelper::fresnsConfigByItemKey('document_extension_names'),
+            default => null,
+        };
+        $maxUploadNumber = $request->attributes->get('maxUploadNumber');
+        $maxSize = $uploadConfig['maxSize'] ?? match ($fileType) {
+            'image' => ConfigHelper::fresnsConfigByItemKey('image_max_size'),
+            'video' => ConfigHelper::fresnsConfigByItemKey('video_max_size'),
+            'audio' => ConfigHelper::fresnsConfigByItemKey('audio_max_size'),
+            'document' => ConfigHelper::fresnsConfigByItemKey('document_max_size'),
+            default => 0,
+        };
+        $maxDuration = match ($fileType) {
+            'image' => 0,
+            'video' => ConfigHelper::fresnsConfigByItemKey('video_max_duration'),
+            'audio' => ConfigHelper::fresnsConfigByItemKey('audio_max_duration'),
+            'document' => 0,
+            default => 0,
+        };
+
+        $fsLang = ConfigHelper::fresnsConfigLanguagePack($langTag);
+
+        $imagex = new FresnsImageXService($typeInt);
         $imagexClientAppId = $imagex->getClientAppId();
         $imagexServiceId = $imagex->getServiceId();
 
         $uploadSessionId = Str::uuid()->toString();
         CacheHelper::put([
-            'platformId' => $checkHeaders['platformId'],
-            'usageType' => $uploadInfo['usageType'],
-            'tableName' => $uploadInfo['tableName'],
-            'tableColumn' => $uploadInfo['tableColumn'] ?? 'id',
-            'tableId' => $uploadInfo['tableId'] ?? null,
-            'tableKey' => $uploadInfo['tableKey'] ?? null,
-            'aid' => $checkHeaders['aid'],
-            'uid' => $checkHeaders['uid'],
-            'type' => $fileType,
-        ], 'imagex:uploadsession:' . $uploadSessionId, Constants::$cacheTags, 1, now()->addHour(1));
+            'type' => $typeInt,
+            'aid' => $aid,
+            'uid' => $authUid,
+            'uploaded' => false,
+        ], 'imagex:uploadsession:' . $uploadSessionId, Constants::$cacheTags, now()->addHour(1));
 
         return view('ImageX::upload', compact(
             'langTag',
             'fileType',
+            'typeInt',
             'checkHeaders',
             'fsLang',
             'uploadConfig',
-            'fileCount',
-            'fileCountTip',
-            'fileMax',
+            'maxUploadNumber',
             'imagexClientAppId',
             'imagexServiceId',
             'uploadSessionId',
+            'inputAccept',
+            'extensionNames',
+            'maxSize',
+            'maxDuration',
         ));
     }
 

@@ -1,19 +1,19 @@
 {
     "fskey": "ImageX",
-    "type": 1,
     "name": "ImageX Integration",
     "description": "ImageX integration for fresns",
     "author": "Eric_Lian",
     "authorLink": "https://superexercisebook.com/",
     "version": "1.7.5",
-    "scene": [
+    "panelUsages": [
         "storage"
     ],
-    "accessPath": "/imagex/upload?authorization={authorization}&config={uploadInfo}&postMessageKey={postMessageKey}",
+    "accessPath": "/imagex/upload?accessToken={accessToken}&uploadInfo={uploadInfo}&postMessageKey={postMessageKey}",
     "settingsPath": null,
     "providers": [
         "Plugins\\ImageX\\Providers\\ImageXServiceProvider",
         "Plugins\\ImageX\\Providers\\CmdWordServiceProvider"
     ],
-    "aliases": []
+    "autoloadFiles": [],
+    "aliases": {}
 }

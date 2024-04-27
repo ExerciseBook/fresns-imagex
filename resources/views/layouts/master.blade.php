@@ -18,12 +18,15 @@
 
     <div class="fresns-tips"></div>
 
-    <script src="//res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    <script src="https://unpkg.byted-static.com/tt-uploader/1.0.15/dist/index.js"></script>
+
     <script src="{{ @asset('/static/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ @asset('/static/js/jquery.min.js') }}"></script>
     <script src="{{ @asset('/static/js/select2.min.js') }}"></script>
-    <script src="https://unpkg.byted-static.com/tt-uploader/1.0.15/dist/index.js"></script>
     <script src="{{ @asset('/assets/ImageX/js/app.js') }}"></script>
+    <script src="/static/js/fresns-callback.js"></script>
+
     @stack('script')
 </body>
 </html>

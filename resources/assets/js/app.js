@@ -29,9 +29,9 @@ window.tips = function (message, code = 200) {
 // 并在页面的相关按钮增加 class 样式 ajax-progress-submit
 // 在相关代码中调用:
 // progressInit && progressInit();
-// progressReset() && progressReset();
-// progressDown() && progressDown();
-// progressExit() && progressExit();
+// progressReset && progressReset();
+// progressDown && progressDown();
+// progressExit && progressExit();
 window.progress = {
     total: 100,
     valuenow: 0,
@@ -167,11 +167,10 @@ function onUploadProgress(data) {
 }
 
 function onUploadCompleted(data) {
-    progressDown() && progressDown();
+    progressDown && progressDown();
 
     const key = data.key;
     const fileInfo = FileInfo[key];
-    const userAgent = navigator.userAgent.toLowerCase();
     data.uploadResult.FileName = data.fileName;
 
     $.ajax({
@@ -185,54 +184,18 @@ function onUploadCompleted(data) {
             'uploadResult': data.uploadResult,
         },
         success(res) {
-            let searchParams = new URLSearchParams(window.location.href);
+            // postMessage
+            let callbackAction = {
+                postMessageKey: '{{ $postMessageKey }}',
+                windowClose: lastUploaded,
+                redirectUrl: '',
+                dataHandler: 'add',
+            };
 
-            const fresnsCallbackMessage = {
-                code: 0, // 处理状态，0 表示成功，其余为失败状态码
-                message: 'ok', // 失败时的提示信息
-                action: {
-                    postMessageKey: searchParams.get('postMessageKey'), // 路径中 postMessageKey 变量值
-                    windowClose: true, // 是否关闭窗口或弹出层(modal)
-                    redirectUrl: '', // 是否重定向新页面
-                    dataHandler: 'add' // 是否处理数据: add, remove, reload
-                },
-                data: res.data,
-            }
+            // /static/js/fresns-callback.js
+            FresnsCallback.send(callbackAction, res.data);
 
-            const messageString = JSON.stringify(fresnsCallbackMessage);
-
-            switch (true) {
-                case (window.Android !== undefined):
-                    // Android (addJavascriptInterface)
-                    window.Android.receiveMessage(messageString);
-                    break;
-
-                case (window.webkit && window.webkit.messageHandlers.iOSHandler !== undefined):
-                    // iOS (WKScriptMessageHandler)
-                    window.webkit.messageHandlers.iOSHandler.postMessage(messageString);
-                    break;
-
-                case (window.FresnsJavascriptChannel !== undefined):
-                    // Flutter
-                    window.FresnsJavascriptChannel.postMessage(messageString);
-                    break;
-
-                case (window.ReactNativeWebView !== undefined):
-                    // React Native WebView
-                    window.ReactNativeWebView.postMessage(messageString);
-                    break;
-
-                case (userAgent.indexOf('miniprogram') > -1):
-                    // WeChat Mini Program
-                    wx.miniProgram.postMessage({data: messageString});
-                    break;
-
-                // Web
-                default:
-                    parent.postMessage(messageString, '*');
-            }
-
-            console.log('发送给父级的信息', fresnsCallbackMessage);
+            console.log('发送给父级的信息', callbackAction);
             FileFinishCallback[key]();
         },
         error(e) {

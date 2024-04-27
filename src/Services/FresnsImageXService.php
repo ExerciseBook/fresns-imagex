@@ -8,19 +8,23 @@ use App\Helpers\ConfigHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StrHelper;
 use App\Models\File;
+use App\Utilities\ConfigUtility;
 use App\Utilities\FileUtility;
 use ExerciseBook\Flysystem\ImageX\ImageXAdapter;
 use ExerciseBook\Flysystem\ImageX\ImageXConfig;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use League\Flysystem\Config;
 use Plugins\ImageX\Configuration\Constants;
 use Symfony\Component\Uid\UuidV4;
 
+
+/**
+ * not maintained by ioc for lacking arguments when ioc initialing
+ */
 class FresnsImageXService
 {
-    protected int $storageId = File::STORAGE_VOLC_ENGINE;
-
     private ImageXConfig $imagexConfig;
 
     private ImageXAdapter $adapter;
@@ -204,7 +208,7 @@ class FresnsImageXService
             $storeKey = Str::uuid()->toString();
             $sts = $this->adapter->getClient()->getUploadAuth([$this->getServiceId()], $expireTime, $storeKey);
             $sts['storeKey'] = $storeKey;
-            CacheHelper::put($sts, "imagex:sts:" . $sts['AccessKeyID'], Constants::$cacheTags, 1, now()->addHour(1));
+            CacheHelper::put($sts, "imagex:sts:" . $sts['AccessKeyID'], Constants::$cacheTags,  now()->addHour(1));
             $ret[] = $sts;
         }
 
@@ -224,6 +228,7 @@ class FresnsImageXService
         $file = $uploadFile->file;
         $resource = fopen($file->path(), "r");
         $this->getAdapter()->writeStream($path, $resource, new Config());
+        $fileMeta = $this->getAdapter()->getImageUploadFile($path);
 
         $bodyInfo = [
             'platformId' => $uploadFile->platformId,
@@ -235,19 +240,31 @@ class FresnsImageXService
             'aid' => $uploadFile->aid ?: null,
             'uid' => $uploadFile->uid ?: null,
             'type' => $uploadFile->type,
+            'path' => $path,
             'moreJson' => $uploadFile->moreJson ?: null,
             'md5' => null,
         ];
 
-        $uploadFileInfo = FileUtility::saveFileInfoToDatabase($bodyInfo, $path, $file);
+        $usageInfo = [
+            'usageType' => $uploadFile->usageType,
+            'platformId' => $uploadFile->platformId,
+            'tableName' => $uploadFile->tableName,
+            'tableColumn' => $uploadFile->tableColumn,
+            'tableId' => $uploadFile->tableId,
+            'tableKey' => $uploadFile->tableKey,
+            'moreInfo' => $uploadFile->moreInfo,
+            'aid' => $uploadFile->aid,
+            'uid' => $uploadFile->uid,
+            'remark' => null,
+        ];
 
-        @unlink($file->path());
-        return $uploadFileInfo;
+        $fileModel = FileUtility::uploadFileInfo($uploadFile->file, $bodyInfo, $usageInfo);
+        return FileHelper::fresnsFileInfoById($fileModel->fid, $usageInfo);
     }
 
     public function uploadFileInfo(UploadFileInfo $uploadFileInfo)
     {
-        $bodyInfo = [
+        $usageInfo = [
             'platformId' => $uploadFileInfo->platformId,
             'usageType' => $uploadFileInfo->usageType,
             'tableName' => $uploadFileInfo->tableName,
@@ -260,14 +277,7 @@ class FresnsImageXService
             'fileInfo' => $uploadFileInfo->fileInfo,
         ];
 
-        $uploadFileInfos = FileUtility::uploadFileInfo($bodyInfo);
-
-        $data = [];
-        foreach ($uploadFileInfos as $item) {
-            $data[] = $item;
-        }
-
-        return $data;
+        return FileUtility::saveFileInfo($uploadFileInfo->fileInfo, $usageInfo);
     }
 
     public function getAntiLinkFileInfo(AntiLinkFileInfo $antiLinkFileInfo)
@@ -316,7 +326,7 @@ class FresnsImageXService
             }
 
             $cacheTime = CacheHelper::fresnsCacheTimeByFileType($file->type, null, 2);
-            CacheHelper::put($fileInfo, $cacheKey, Constants::$cacheTags, 1, $cacheTime);
+            CacheHelper::put($fileInfo, $cacheKey, Constants::$cacheTags, $cacheTime);
 
             $data = $fileInfo;
         };
@@ -385,6 +395,10 @@ class FresnsImageXService
                 $file = File::where('fid', $id)->first();
             }
 
+            if (empty($file)) {
+                continue;
+            }
+
             // 兼容旧版本的错误逻辑
             $uriPrefix = $this->getAdapter()->getUriPrefix() . '/';
             $path = $file->path;
@@ -398,7 +412,7 @@ class FresnsImageXService
             $file->delete();
 
             // 删除 防盗链 缓存
-            CacheHelper::forgetFresnsFileUsage($file->fid);
+            CacheHelper::clearDataCache('file', $file->fid);
             CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->id, Constants::$cacheTags);
             CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->fid, Constants::$cacheTags);
         }

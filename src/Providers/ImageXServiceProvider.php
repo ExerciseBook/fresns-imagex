@@ -2,9 +2,9 @@
 
 namespace Plugins\ImageX\Providers;
 
-use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
-class ImageXServiceProvider extends BaseServiceProvider
+class ImageXServiceProvider extends ServiceProvider
 {
     /**
      * Boot the application events.
@@ -16,10 +16,6 @@ class ImageXServiceProvider extends BaseServiceProvider
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
-
-        $this->loadMigrationsFrom(dirname(__DIR__, 2) . '/database/migrations');
-
-        // Event::listen(UserCreated::class, UserCreatedListener::class);
     }
 
     /**
@@ -30,10 +26,6 @@ class ImageXServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->app->register(RouteServiceProvider::class);
-
-        if ($this->app->runningInConsole()) {
-            $this->app->register(CommandServiceProvider::class);
-        }
     }
 
     /**
@@ -43,17 +35,6 @@ class ImageXServiceProvider extends BaseServiceProvider
      */
     protected function registerConfig()
     {
-        $this->mergeConfigFrom(
-            dirname(__DIR__, 2) . '/config/imagex.php', 'imagex'
-        );
-
-        $this->mergeConfigFrom(
-            dirname(__DIR__, 2) . '/config/disks.php', 'fresns-imagex-filesystems'
-        );
-
-        $this->publishes([
-            __DIR__ . '/../../config/imagex.php' => config_path('imagex.php'),
-        ], 'config');
     }
 
     /**
