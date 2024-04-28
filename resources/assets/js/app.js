@@ -135,7 +135,8 @@ function applyUploadToken(data) {
 const FileInfo = {};
 const FileFinishCallback = {};
 const TaskInfo = {
-    promiseHandler: []
+    promiseHandler: [],
+    postMessageKey: "",
 };
 
 /**
@@ -186,8 +187,8 @@ function onUploadCompleted(data) {
         success(res) {
             // postMessage
             let callbackAction = {
-                postMessageKey: '{{ $postMessageKey }}',
-                windowClose: lastUploaded,
+                postMessageKey: TaskInfo.postMessageKey,
+                windowClose: false,
                 redirectUrl: '',
                 dataHandler: 'add',
             };

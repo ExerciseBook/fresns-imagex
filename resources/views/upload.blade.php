@@ -34,6 +34,8 @@
 
 @push('script')
     <script>
+        TaskInfo.postMessageKey = '{{ $postMessageKey }}';
+
         const loadVideo = file => new Promise((resolve, reject) => {
             try {
                 let video = document.createElement('video')
@@ -111,7 +113,7 @@
 
         function doUpload(e) {
             if (fileInput.files.length === 0) {
-                window.tips("未选择文件");
+                window.tips('{{ $fsLang['editorNoSelectGroup'] }}');
                 return;
             }
 
@@ -121,14 +123,17 @@
             }).then(e => {
                 return uploadFile(ttUploader, fileInput.files, e)
             }).then(async e => {
-                const userAgent = navigator.userAgent.toLowerCase();
-                if (userAgent.indexOf('miniprogram') > -1) {
-                    await Promise.all(e.promiseHandler)
-                    wx.miniProgram.navigateBack();
-                }
+                await Promise.all(e.promiseHandler)
+                let callbackAction = {
+                    postMessageKey: '',
+                    windowClose: true,
+                    redirectUrl: '',
+                    dataHandler: '',
+                };
+                FresnsCallback.send(callbackAction);
             }).catch((e) => {
                 window.tips(e.message, e.code)
-                progressExit() && progressExit();
+                progressExit && progressExit();
             });
         }
     </script>
