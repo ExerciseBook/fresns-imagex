@@ -57,8 +57,8 @@ class ApiController extends Controller
             return $this->failure(30000, 'session invalid');
         }
 
-        $platformId = Cookie::get('fresns_plugin_cloudinary_platform_id');
-        $authUid = Cookie::get('fresns_plugin_cloudinary_auth_uid');
+        $platformId = Cookie::get('fresns_plugin_imagex_platform_id');
+        $authUid = Cookie::get('fresns_plugin_imagex_auth_uid');
 
         $t['platformId'] = $platformId;
         $t['usageType'] = $request->attributes->get('usageType');
@@ -101,7 +101,7 @@ class ApiController extends Controller
             return $commitRpcResp->getErrorResponse();
         }
 
-        $fileInfo = FileHelper::fresnsFileInfoById($commitRpcResp->getData('fid'), $t);
+        $fileInfo = FileHelper::fresnsFileInfoById($commitRpcResp->getData('fid'));
         return $this->success($fileInfo);
     }
 }
