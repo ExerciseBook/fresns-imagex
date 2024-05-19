@@ -6,7 +6,7 @@ use App\Models\File;
 use Fresns\DTO\DTO;
 use Illuminate\Validation\Rule;
 
-class AntiLinkFileInfo extends DTO
+class TemporaryUrlFileInfo extends DTO
 {
     public function rules(): array
     {

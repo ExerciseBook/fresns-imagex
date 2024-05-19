@@ -3,17 +3,17 @@
     "name": "ImageX Integration",
     "description": "ImageX integration for fresns",
     "author": "Eric_Lian",
-    "authorLink": "https://superexercisebook.com/",
-    "version": "2.0.0",
-    "panelUsages": [
-        "storage"
-    ],
-    "accessPath": "/imagex/upload?accessToken={accessToken}&uploadInfo={uploadInfo}&postMessageKey={postMessageKey}",
-    "settingsPath": null,
+    "website": "https://superexercisebook.com/",
+    "version": "2.1.0",
     "providers": [
         "Plugins\\ImageX\\Providers\\ImageXServiceProvider",
         "Plugins\\ImageX\\Providers\\CmdWordServiceProvider"
     ],
     "autoloadFiles": [],
-    "aliases": {}
+    "aliases": {},
+    "panelUsages": [
+        "storage"
+    ],
+    "accessPath": "/imagex/upload?accessToken={accessToken}&uploadInfo={uploadInfo}&postMessageKey={postMessageKey}",
+    "settingsPath": null
 }

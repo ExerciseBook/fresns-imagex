@@ -8,12 +8,10 @@ use App\Helpers\ConfigHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StrHelper;
 use App\Models\File;
-use App\Utilities\ConfigUtility;
 use App\Utilities\FileUtility;
 use ExerciseBook\Flysystem\ImageX\ImageXAdapter;
 use ExerciseBook\Flysystem\ImageX\ImageXConfig;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use League\Flysystem\Config;
 use Plugins\ImageX\Configuration\Constants;
@@ -33,7 +31,7 @@ class FresnsImageXService
 
     private string $fileRetrievingSignatureToken;
 
-    private bool $antiLinkConfigEnabled;
+    private bool $temporaryUrlConfigEnabled;
 
     private int $processingType;
 
@@ -58,15 +56,15 @@ class FresnsImageXService
         $config->secretKey = Arr::get($settings, 'secretKey', '');
         $config->serviceId = $serviceId;
         $this->clientAppId = $clientAppId;
-        $config->domain = Arr::get($settings, 'bucketDomain', '');
+        $config->domain = Arr::get($settings, 'accessDomain', '');
 
-        $this->fileRetrievingSignatureToken = Arr::get($settings, 'antiLinkKey', '') ?? '';
+        $this->fileRetrievingSignatureToken = Arr::get($settings, 'temporaryUrlKey', '') ?? '';
         $this->imagexConfig = $config;
 
         $this->adapter = new ImageXAdapter($this->imagexConfig);
 
         $this->processingType = $type;
-        $this->antiLinkConfigEnabled = Arr::get($settings, 'antiLinkConfigStatus', 'false');
+        $this->temporaryUrlConfigEnabled = Arr::get($settings, 'temporaryUrlStatus', 'false');
     }
 
     public function isImageProcessing()
@@ -102,7 +100,7 @@ class FresnsImageXService
      */
     public function needSignature()
     {
-        return $this->antiLinkConfigEnabled && $this->fileRetrievingSignatureToken != null && strlen($this->fileRetrievingSignatureToken) > 0;
+        return $this->temporaryUrlConfigEnabled && $this->fileRetrievingSignatureToken != null && strlen($this->fileRetrievingSignatureToken) > 0;
     }
 
     /**
@@ -280,18 +278,18 @@ class FresnsImageXService
         return FileUtility::saveFileInfo($uploadFileInfo->fileInfo, $usageInfo);
     }
 
-    public function getAntiLinkFileInfo(AntiLinkFileInfo $antiLinkFileInfo)
+    public function getTemporaryUrlFileInfo(TemporaryUrlFileInfo $temporaryUrlFileInfo)
     {
         if (!$this->needSignature()) {
             return null;
         }
 
-        $cacheKey = 'imagex_file_antilink_' . $antiLinkFileInfo->fileIdOrFid;
+        $cacheKey = 'imagex_file_temporary_url_' . $temporaryUrlFileInfo->fileIdOrFid;
 
         // 缓存
         $data = CacheHelper::get($cacheKey, Constants::$cacheTags);
         if (empty($data)) {
-            $file = $this->getFileByFileIdOrFid($antiLinkFileInfo->fileIdOrFid);
+            $file = $this->getFileByFileIdOrFid($temporaryUrlFileInfo->fileIdOrFid);
             if (is_null($file)) {
                 return null;
             }
@@ -347,28 +345,28 @@ class FresnsImageXService
         }
     }
 
-    public function getAntiLinkFileInfoList(AntiLinkFileInfoList $antiLinkFileInfoList)
+    public function getTemporaryUrlFileInfoList(TemporaryUrlFileInfoList $temporaryUrlFileInfoList)
     {
         $data = [];
-        foreach ($antiLinkFileInfoList->fileIdsOrFids as $fileIdOrFid) {
-            $antiLinkFileInfo = new AntiLinkFileInfo([
-                'type' => $antiLinkFileInfoList->type,
+        foreach ($temporaryUrlFileInfoList->fileIdsOrFids as $fileIdOrFid) {
+            $temporaryUrlFileInfo = new TemporaryUrlFileInfo([
+                'type' => $temporaryUrlFileInfoList->type,
                 'fileIdOrFid' => $fileIdOrFid,
             ]);
 
-            $data[] = $this->getAntiLinkFileInfo($antiLinkFileInfo);
+            $data[] = $this->getTemporaryUrlFileInfo($temporaryUrlFileInfo);
         }
         return $data;
     }
 
-    public function getAntiLinkFileOriginalUrl(AntiLinkFileOriginalUrl $antiLinkFileInfoList)
+    public function getTemporaryUrlOfOriginalFile(TemporaryUrlOfOriginalFile $temporaryUrlOfOriginalFile)
     {
         if (!$this->needSignature()) {
             return null;
         }
 
         /** @var File $file */
-        $file = $this->getFileByFileIdOrFid($antiLinkFileInfoList->fileIdOrFid);
+        $file = $this->getFileByFileIdOrFid($temporaryUrlOfOriginalFile->fileIdOrFid);
 
         $originalPath = $file->original_path;
         if (!$originalPath) {
@@ -413,8 +411,8 @@ class FresnsImageXService
 
             // 删除 防盗链 缓存
             CacheHelper::clearDataCache('file', $file->fid);
-            CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->id, Constants::$cacheTags);
-            CacheHelper::forgetFresnsKey('imagex_file_antilink_' . $file->fid, Constants::$cacheTags);
+            CacheHelper::forgetFresnsKey('imagex_file_temporary_url_' . $file->id, Constants::$cacheTags);
+            CacheHelper::forgetFresnsKey('imagex_file_temporary_url_' . $file->fid, Constants::$cacheTags);
         }
         return true;
     }

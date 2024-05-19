@@ -41,29 +41,29 @@ class CmdWordService
         return $this->success($ret);
     }
 
-    public function getAntiLinkFileInfo(array $wordBody)
+    public function getTemporaryUrlFileInfo(array $wordBody)
     {
         Log::debug(json_encode($wordBody));
 
-        $antiLinkFileInfo = new AntiLinkFileInfo($wordBody);
-        $imagexService = new FresnsImageXService($antiLinkFileInfo->type);
-        $ret = $imagexService->getAntiLinkFileInfo($antiLinkFileInfo);
+        $temporaryUrlFileInfo = new TemporaryUrlFileInfo($wordBody);
+        $imagexService = new FresnsImageXService($temporaryUrlFileInfo->type);
+        $ret = $imagexService->getTemporaryUrlFileInfo($temporaryUrlFileInfo);
         return $this->success($ret);
     }
 
-    public function getAntiLinkFileInfoList(array $wordBody)
+    public function getTemporaryUrlFileInfoList(array $wordBody)
     {
-        $antiLinkFileInfoList = new AntiLinkFileInfoList($wordBody);
-        $imagexService = new FresnsImageXService($antiLinkFileInfoList->type);
-        $ret = $imagexService->getAntiLinkFileInfoList($antiLinkFileInfoList);
+        $temporaryUrlFileInfoList = new TemporaryUrlFileInfoList($wordBody);
+        $imagexService = new FresnsImageXService($temporaryUrlFileInfoList->type);
+        $ret = $imagexService->getTemporaryUrlFileInfoList($temporaryUrlFileInfoList);
         return $this->success($ret);
     }
 
-    public function getAntiLinkFileOriginalUrl(array $wordBody)
+    public function getTemporaryUrlOfOriginalFile(array $wordBody)
     {
-        $antiLinkFileInfoList = new AntiLinkFileOriginalUrl($wordBody);
-        $imagexService = new FresnsImageXService($antiLinkFileInfoList->type);
-        $ret = $imagexService->getAntiLinkFileOriginalUrl($antiLinkFileInfoList);
+        $temporaryUrlOfOriginalFile = new TemporaryUrlOfOriginalFile($wordBody);
+        $imagexService = new FresnsImageXService($temporaryUrlOfOriginalFile->type);
+        $ret = $imagexService->getTemporaryUrlOfOriginalFile($temporaryUrlOfOriginalFile);
         return $this->success($ret);
     }
 
