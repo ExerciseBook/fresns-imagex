@@ -3,7 +3,7 @@
     "name": "ImageX Integration",
     "description": "ImageX integration for fresns",
     "author": "Eric_Lian",
-    "website": "https://superexercisebook.com/",
+    "website": "https://github.com/ExerciseBook/fresns-imagex",
     "version": "2.1.0",
     "providers": [
         "Plugins\\ImageX\\Providers\\ImageXServiceProvider",
