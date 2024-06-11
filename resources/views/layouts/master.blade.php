@@ -18,7 +18,6 @@
 
     <div class="fresns-tips"></div>
 
-    <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
     <script src="https://unpkg.byted-static.com/tt-uploader/1.0.15/dist/index.js"></script>
 
     <script src="{{ @asset('/static/js/bootstrap.bundle.min.js') }}"></script>
