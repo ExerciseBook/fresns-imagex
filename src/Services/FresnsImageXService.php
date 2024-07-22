@@ -239,7 +239,7 @@ class FresnsImageXService
             'uid' => $uploadFile->uid ?: null,
             'type' => $uploadFile->type,
             'path' => $path,
-            'moreJson' => $uploadFile->moreJson ?: null,
+            'moreInfo' => $uploadFile->moreInfo ?: null,
             'md5' => null,
         ];
 
