@@ -4,7 +4,7 @@
     "description": "ImageX integration for fresns",
     "author": "Eric_Lian",
     "website": "https://github.com/ExerciseBook/fresns-imagex",
-    "version": "2.1.0",
+    "version": "2.1.2",
     "providers": [
         "Plugins\\ImageX\\Providers\\ImageXServiceProvider",
         "Plugins\\ImageX\\Providers\\CmdWordServiceProvider"
