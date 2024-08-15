@@ -74,7 +74,7 @@ class ApiController extends Controller
             'name' => $uploadResult['FileName'],
             'mime' => '',
             'extension' => pathinfo($uploadResult['FileName'], PATHINFO_EXTENSION),
-            'size' => $uploadResult['ImageSize'], // 单位 Byte
+            'size' => $uploadResult['ImageSize'] ? $uploadResult['ImageSize'] : 1, // 单位 Byte
             'md5' => '',
             'sha' => '',
             'shaType' => '',
